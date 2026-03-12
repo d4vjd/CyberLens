@@ -1,4 +1,4 @@
-<![CDATA[# Detection Rules
+# Detection Rules
 
 CyberLens uses a Sigma-inspired YAML format for detection rules. Rules are stored in the `rules/` directory and synced into the database at backend startup.
 
