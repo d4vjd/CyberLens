@@ -139,6 +139,7 @@ export type OverviewMetric = {
   value: string;
   delta: string;
   tone: Severity | "neutral";
+  tooltip?: string;
 };
 
 export type ThroughputPoint = {
@@ -164,7 +165,12 @@ export type OverviewSnapshot = {
   throughput: ThroughputPoint[];
   severityBreakdown: DistributionPoint[];
   topSources: SourceSummary[];
-  watchlist: Array<{ label: string; value: string; tone: Severity | "neutral" }>;
+  watchlist: Array<{
+    label: string;
+    value: string;
+    tone: Severity | "neutral";
+    context: string;
+  }>;
 };
 
 export type TrendPoint = {

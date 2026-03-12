@@ -14,6 +14,8 @@ type DataTableProps<T> = {
   rowKey: (item: T) => string | number;
   emptyMessage: string;
   onRowClick?: (item: T) => void;
+  rowTitle?: (item: T) => string;
+  selectedRowKey?: string | number | null;
 };
 
 export function DataTable<T>({
@@ -22,6 +24,8 @@ export function DataTable<T>({
   rowKey,
   emptyMessage,
   onRowClick,
+  rowTitle,
+  selectedRowKey,
 }: DataTableProps<T>) {
   return (
     <table className="data-table">
@@ -34,17 +38,31 @@ export function DataTable<T>({
       </thead>
       <tbody>
         {items.length ? (
-          items.map((item) => (
-            <tr
-              className={onRowClick ? "data-table__row data-table__row--interactive" : "data-table__row"}
-              key={rowKey(item)}
-              onClick={() => onRowClick?.(item)}
-            >
-              {columns.map((column) => (
-                <td key={column.header}>{column.render(item)}</td>
-              ))}
-            </tr>
-          ))
+          items.map((item) => {
+            const key = rowKey(item);
+            const isSelected = selectedRowKey === key;
+
+            return (
+              <tr
+                className={
+                  onRowClick
+                    ? isSelected
+                      ? "data-table__row data-table__row--interactive data-table__row--selected"
+                      : "data-table__row data-table__row--interactive"
+                    : isSelected
+                      ? "data-table__row data-table__row--selected"
+                      : "data-table__row"
+                }
+                key={key}
+                onClick={() => onRowClick?.(item)}
+                title={rowTitle?.(item)}
+              >
+                {columns.map((column) => (
+                  <td key={column.header}>{column.render(item)}</td>
+                ))}
+              </tr>
+            );
+          })
         ) : (
           <tr>
             <td className="table-message" colSpan={columns.length}>

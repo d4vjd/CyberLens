@@ -10,6 +10,7 @@ import { PageIntro } from "../../shared/components/PageIntro";
 import { StatusBadge } from "../../shared/components/StatusBadge";
 import type { CaseDetailApi, CaseListResponseApi, CaseRecord } from "../../shared/types";
 import { fetchJson, patchJson, postJson } from "../../shared/utils/api";
+import { formatCountLabel, formatDateTime, humanizeCompactStatus, humanizeIdentifier } from "../../shared/utils/format";
 import { getSyntheticCases } from "../../shared/utils/mockData";
 
 const tabs = ["overview", "timeline", "evidence", "playbook"] as const;
@@ -94,8 +95,13 @@ export function CasesPage() {
         description="Track escalations, playbooks, evidence, and response actions. Synthetic mode remains available for densely staged screenshots, while live mode now consumes the incident API."
         actions={
           <StatusBadge
-            label={dataSource === "synthetic" ? "Synthetic workflow active" : `${liveCases.length} live cases`}
+            label={dataSource === "synthetic" ? formatCountLabel(syntheticCases.length, "synthetic case") : `${liveCases.length} live cases`}
             tone={dataSource === "synthetic" ? "connected" : "medium"}
+            tooltip={
+              dataSource === "synthetic"
+                ? "Synthetic cases mirror the staged walkthrough and stay aligned with alerts, events, and playbooks."
+                : "The cases page is reading incident records from the live backend."
+            }
           />
         }
       />
@@ -118,7 +124,7 @@ export function CasesPage() {
 
       {actionMessage ? (
         <DataPanel subtitle="Most recent workflow action" title="Operator update">
-          <p className="table-message">{actionMessage}</p>
+          <p className="toast-banner">{actionMessage}</p>
         </DataPanel>
       ) : null}
 
@@ -140,8 +146,8 @@ export function CasesPage() {
                       </p>
                     </div>
                     <div className="panel-badge-row">
-                      <StatusBadge label={item.status} tone="neutral" />
-                      <StatusBadge label={item.severity} tone={item.severity} />
+                      <StatusBadge label={humanizeCompactStatus(item.status)} tone="neutral" />
+                      <StatusBadge label={humanizeIdentifier(item.severity)} tone={item.severity} />
                     </div>
                   </button>
                 ))
@@ -159,8 +165,8 @@ export function CasesPage() {
                       </p>
                     </div>
                     <div className="panel-badge-row">
-                      <StatusBadge label={item.status} tone="neutral" />
-                      <StatusBadge label={item.severity} tone={item.severity} />
+                      <StatusBadge label={humanizeCompactStatus(item.status)} tone="neutral" />
+                      <StatusBadge label={humanizeIdentifier(item.severity)} tone={item.severity} />
                     </div>
                   </button>
                 ))}
@@ -177,7 +183,7 @@ export function CasesPage() {
                   onClick={() => setActiveTab(tab)}
                   type="button"
                 >
-                  {tab}
+                  {humanizeIdentifier(tab)}
                 </button>
               ))}
             </div>
@@ -191,10 +197,10 @@ export function CasesPage() {
                 {activeTab === "overview" ? (
                   <>
                     <div className="panel-badge-row">
-                      <StatusBadge label={selectedLiveCase.severity} tone={selectedLiveCase.severity} />
-                      <StatusBadge label={selectedLiveCase.status} tone="neutral" />
+                      <StatusBadge label={humanizeIdentifier(selectedLiveCase.severity)} tone={selectedLiveCase.severity} />
+                      <StatusBadge label={humanizeCompactStatus(selectedLiveCase.status)} tone="neutral" />
                       <StatusBadge
-                        label={selectedLiveCase.playbook_id ?? "no playbook"}
+                        label={selectedLiveCase.playbook_id ? humanizeIdentifier(selectedLiveCase.playbook_id) : "No playbook"}
                         tone={selectedLiveCase.playbook_id ? "medium" : "neutral"}
                       />
                     </div>
@@ -210,21 +216,45 @@ export function CasesPage() {
                       <div>
                         <span className="detail-label">SLA due</span>
                         <strong>
-                          {selectedLiveCase.sla_due_at ? new Date(selectedLiveCase.sla_due_at).toLocaleString() : "n/a"}
+                          {selectedLiveCase.sla_due_at ? formatDateTime(selectedLiveCase.sla_due_at) : "Not scheduled"}
                         </strong>
                       </div>
                       <div>
                         <span className="detail-label">Linked alerts</span>
-                        <strong>{selectedLiveCase.alerts.length}</strong>
+                        <strong>{formatCountLabel(selectedLiveCase.alerts.length, "alert")}</strong>
+                      </div>
+                      <div>
+                        <span className="detail-label">Evidence items</span>
+                        <strong>{formatCountLabel(selectedLiveCase.evidence.length, "artifact")}</strong>
+                      </div>
+                      <div>
+                        <span className="detail-label">Updated</span>
+                        <strong>{formatDateTime(selectedLiveCase.updated_at)}</strong>
                       </div>
                     </div>
                     <p className="detail-summary">
                       {selectedLiveCase.description ?? "No case summary has been recorded yet."}
                     </p>
+                    <div className="watchlist-grid watchlist-grid--compact">
+                      <article className="watchlist-card">
+                        <span>Playbook</span>
+                        <strong>{selectedLiveCase.playbook_id ? humanizeIdentifier(selectedLiveCase.playbook_id) : "Manual response"}</strong>
+                        <p>Run the playbook to append automated response actions and timeline updates.</p>
+                      </article>
+                      <article className="watchlist-card">
+                        <span>Resolution target</span>
+                        <strong>{selectedLiveCase.resolved_at ? "Resolved" : "Open investigation"}</strong>
+                        <p>
+                          {selectedLiveCase.resolved_at
+                            ? `Closed at ${formatDateTime(selectedLiveCase.resolved_at)}`
+                            : "Use the action buttons below to move the case through containment and closure."}
+                        </p>
+                      </article>
+                    </div>
                     <div className="pill-list">
                       {selectedLiveCase.alerts.map((alert) => (
                         <span className="pill-chip" key={alert.alert_uid}>
-                          {alert.alert_uid}
+                          {`${alert.alert_uid} · ${humanizeIdentifier(alert.severity)}`}
                         </span>
                       ))}
                     </div>
@@ -269,7 +299,7 @@ export function CasesPage() {
                         <div>
                           <strong>{entry.summary}</strong>
                           <p>
-                            {new Date(entry.created_at).toLocaleString()} · {entry.actor} · {entry.event_type}
+                            {formatDateTime(entry.created_at)} · {entry.actor} · {humanizeIdentifier(entry.event_type)}
                           </p>
                         </div>
                       </div>
@@ -300,12 +330,12 @@ export function CasesPage() {
                         <div className="timeline-preview__item" key={action.id}>
                           <span />
                           <div>
-                            <strong>{action.action_type}</strong>
-                            <p>
-                              {action.target} · {action.status} · {new Date(action.created_at).toLocaleString()}
-                            </p>
-                          </div>
+                          <strong>{action.action_type}</strong>
+                          <p>
+                              {action.target} · {humanizeCompactStatus(action.status)} · {formatDateTime(action.created_at)}
+                          </p>
                         </div>
+                      </div>
                       ))}
                     </div>
                   ) : (
@@ -341,7 +371,7 @@ function SyntheticCaseDetail({
           <div className="detail-grid">
             <div>
               <span className="detail-label">Severity</span>
-              <strong>{selectedCase.severity}</strong>
+              <strong>{humanizeIdentifier(selectedCase.severity)}</strong>
             </div>
             <div>
               <span className="detail-label">Priority</span>
@@ -353,10 +383,35 @@ function SyntheticCaseDetail({
             </div>
             <div>
               <span className="detail-label">SLA due</span>
-              <strong>{new Date(selectedCase.sla_due_at).toLocaleString()}</strong>
+              <strong>{formatDateTime(selectedCase.sla_due_at)}</strong>
+            </div>
+            <div>
+              <span className="detail-label">Linked alerts</span>
+              <strong>{formatCountLabel(selectedCase.alerts.length, "alert")}</strong>
+            </div>
+            <div>
+              <span className="detail-label">Evidence</span>
+              <strong>{formatCountLabel(selectedCase.evidence_count, "artifact")}</strong>
             </div>
           </div>
+          <div className="panel-badge-row">
+            <StatusBadge label={humanizeIdentifier(selectedCase.severity)} tone={selectedCase.severity} />
+            <StatusBadge label={humanizeCompactStatus(selectedCase.status)} tone="neutral" />
+            <StatusBadge label={humanizeIdentifier(selectedCase.playbook)} tone="medium" />
+          </div>
           <p className="detail-summary">{selectedCase.summary}</p>
+          <div className="watchlist-grid watchlist-grid--compact">
+            <article className="watchlist-card">
+              <span>Current focus</span>
+              <strong>{selectedCase.timeline[0]?.summary ?? "Awaiting analyst action"}</strong>
+              <p>The newest timeline item is surfaced here to make the overview tab useful at a glance.</p>
+            </article>
+            <article className="watchlist-card">
+              <span>Playbook</span>
+              <strong>{humanizeIdentifier(selectedCase.playbook)}</strong>
+              <p>Containment and evidence steps stay aligned with the synthetic storyline for screenshots.</p>
+            </article>
+          </div>
           <div className="pill-list">
             {selectedCase.alerts.map((alertId) => (
               <span className="pill-chip" key={alertId}>
@@ -375,7 +430,7 @@ function SyntheticCaseDetail({
               <div>
                 <strong>{entry.summary}</strong>
                 <p>
-                  {new Date(entry.at).toLocaleString()} · {entry.actor} · {entry.kind}
+                  {formatDateTime(entry.at)} · {entry.actor} · {humanizeIdentifier(entry.kind)}
                 </p>
               </div>
             </div>

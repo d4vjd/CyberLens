@@ -15,6 +15,7 @@ import { useDebounce } from "../../shared/hooks/useDebounce";
 import { usePagination } from "../../shared/hooks/usePagination";
 import type { EventListResponse, EventRecord } from "../../shared/types";
 import { buildQuery, fetchJson } from "../../shared/utils/api";
+import { formatDateTime, formatFlow, formatNullable, humanizeIdentifier } from "../../shared/utils/format";
 import { getSyntheticEvents } from "../../shared/utils/mockData";
 
 async function fetchLiveEvents(filters: {
@@ -103,8 +104,19 @@ export function EventsPage() {
             <StatusBadge
               label={dataSource === "synthetic" ? "Synthetic feed" : liveStream ? "Live feed enabled" : "Live feed paused"}
               tone={dataSource === "synthetic" ? "connected" : liveStream ? "low" : "neutral"}
+              tooltip={
+                dataSource === "synthetic"
+                  ? "Events are sourced from the bundled showcase dataset."
+                  : liveStream
+                    ? "The page is using live APIs and the alert stream remains enabled."
+                    : "The page is using live APIs, but the background alert stream is paused."
+              }
             />
-            <StatusBadge label={`${data?.total ?? 0} indexed`} tone="neutral" />
+            <StatusBadge
+              label={`${data?.total ?? 0} indexed`}
+              tone="neutral"
+              tooltip="Total events returned by the current filter set."
+            />
           </div>
         }
       />
@@ -120,15 +132,22 @@ export function EventsPage() {
             className="filter-input"
             onChange={(event) => setEventType(event.target.value)}
             placeholder="Event type"
+            title="Filter by normalized event type such as vpn_login, authentication, or data_transfer."
             value={eventType}
           />
           <input
             className="filter-input"
             onChange={(event) => setSourceSystem(event.target.value)}
             placeholder="Source system"
+            title="Filter by parser/source system such as syslog, firewall, windows_event, or json_generic."
             value={sourceSystem}
           />
-          <select className="filter-input" onChange={(event) => setSeverity(event.target.value)} value={severity}>
+          <select
+            className="filter-input"
+            onChange={(event) => setSeverity(event.target.value)}
+            title="Limit the table to a single severity band."
+            value={severity}
+          >
             <option value="">All severities</option>
             <option value="critical">Critical</option>
             <option value="high">High</option>
@@ -138,8 +157,8 @@ export function EventsPage() {
         </div>
       </DataPanel>
 
-      {isLoading ? <p className="table-message">Loading event stream…</p> : null}
-      {isError ? <p className="table-message">Failed to load events from the selected data source.</p> : null}
+      {isLoading ? <div className="loading-state"><span className="loading-spinner" />Loading event stream…</div> : null}
+      {isError ? <div className="error-state">Failed to load events from the selected data source.</div> : null}
 
       {!isLoading && !isError && data ? (
         <div className="content-grid content-grid--wide">
@@ -151,33 +170,41 @@ export function EventsPage() {
               columns={[
                 {
                   header: "Timestamp",
-                  render: (event) => new Date(event.timestamp).toLocaleString(),
+                  render: (event) => formatDateTime(event.timestamp),
                 },
                 {
                   header: "Type",
-                  render: (event) => event.event_type,
+                  render: (event) => humanizeIdentifier(event.event_type),
                 },
                 {
                   header: "Source",
-                  render: (event) => event.source_system,
+                  render: (event) => humanizeIdentifier(event.source_system),
                 },
                 {
-                  header: "Path",
-                  render: (event) => `${event.source_ip ?? "n/a"} → ${event.dest_ip ?? "n/a"}`,
+                  header: "Flow",
+                  render: (event) => formatFlow(event.source_ip, event.dest_ip),
                 },
                 {
                   header: "Action",
-                  render: (event) => event.action ?? "n/a",
+                  render: (event) => formatNullable(event.action, "Not observed"),
                 },
                 {
                   header: "Severity",
-                  render: (event) => <StatusBadge label={event.severity} tone={event.severity} />,
+                  render: (event) => (
+                    <StatusBadge
+                      label={humanizeIdentifier(event.severity)}
+                      tone={event.severity}
+                      tooltip={event.message ?? "Severity assigned during normalization."}
+                    />
+                  ),
                 },
               ]}
               emptyMessage="No events matched the current filters."
               items={data.items}
               onRowClick={setSelectedEvent}
+              rowTitle={(event) => event.message ?? "Click to inspect normalized event details."}
               rowKey={(event) => event.id}
+              selectedRowKey={selectedEvent?.id ?? null}
             />
 
             <div className="table-toolbar">
@@ -195,29 +222,67 @@ export function EventsPage() {
 
           <DataPanel
             subtitle="Selected event detail"
-            title={selectedEvent ? `${selectedEvent.event_type} · #${selectedEvent.id}` : "Event detail"}
+            title={selectedEvent ? `${humanizeIdentifier(selectedEvent.event_type)} · Event ${selectedEvent.id}` : "Event detail"}
           >
             {selectedEvent ? (
               <div className="detail-stack">
                 <div className="detail-grid">
                   <div>
                     <span className="detail-label">Host</span>
-                    <strong>{selectedEvent.hostname ?? "n/a"}</strong>
+                    <strong>{formatNullable(selectedEvent.hostname)}</strong>
                   </div>
                   <div>
                     <span className="detail-label">User</span>
-                    <strong>{selectedEvent.username ?? "n/a"}</strong>
+                    <strong>{formatNullable(selectedEvent.username)}</strong>
+                  </div>
+                  <div>
+                    <span className="detail-label">Source system</span>
+                    <strong>{humanizeIdentifier(selectedEvent.source_system)}</strong>
+                  </div>
+                  <div>
+                    <span className="detail-label">Severity</span>
+                    <StatusBadge
+                      label={humanizeIdentifier(selectedEvent.severity)}
+                      tone={selectedEvent.severity}
+                      tooltip="Severity assigned during parsing and detection correlation."
+                    />
+                  </div>
+                  <div>
+                    <span className="detail-label">Source IP</span>
+                    <strong>{formatNullable(selectedEvent.source_ip)}</strong>
+                  </div>
+                  <div>
+                    <span className="detail-label">Destination IP</span>
+                    <strong>{formatNullable(selectedEvent.dest_ip)}</strong>
                   </div>
                   <div>
                     <span className="detail-label">Protocol</span>
-                    <strong>{selectedEvent.protocol ?? "n/a"}</strong>
+                    <strong>{formatNullable(selectedEvent.protocol, "Not observed")}</strong>
                   </div>
                   <div>
-                    <span className="detail-label">Port</span>
-                    <strong>{selectedEvent.dest_port ?? "n/a"}</strong>
+                    <span className="detail-label">Destination port</span>
+                    <strong>{formatNullable(selectedEvent.dest_port, "Not observed")}</strong>
+                  </div>
+                  <div>
+                    <span className="detail-label">Action</span>
+                    <strong>{formatNullable(selectedEvent.action, "Not observed")}</strong>
+                  </div>
+                  <div>
+                    <span className="detail-label">Observed at</span>
+                    <strong>{formatDateTime(selectedEvent.timestamp)}</strong>
                   </div>
                 </div>
                 <p className="detail-summary">{selectedEvent.message ?? "No event summary available."}</p>
+                <div className="detail-grid detail-grid--summary">
+                  <div>
+                    <span className="detail-label">Connection flow</span>
+                    <strong>{formatFlow(selectedEvent.source_ip, selectedEvent.dest_ip)}</strong>
+                  </div>
+                  <div>
+                    <span className="detail-label">Raw payload</span>
+                    <strong>{selectedEvent.raw_log.trim().startsWith("{") ? "JSON payload" : "Text log line"}</strong>
+                  </div>
+                </div>
                 <pre className="code-surface code-surface--compact">{selectedEvent.raw_log}</pre>
               </div>
             ) : (

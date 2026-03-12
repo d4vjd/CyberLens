@@ -1079,28 +1079,32 @@ export function getSyntheticOverview(intensity: number): OverviewSnapshot {
   return {
     metrics: [
       {
-        label: "Events today",
+        label: "Events indexed",
         value: eventTotal.toLocaleString(),
         delta: `${intensity > 6 ? "+" : "-"}${Math.abs(intensity - 5) * 3 + 8}% vs baseline`,
         tone: "low",
+        tooltip: "Synthetic event volume scales with the showcase intensity slider in Settings.",
       },
       {
         label: "Open alerts",
         value: alertTotal.toString(),
-        delta: `${syntheticAlerts.filter((alert) => alert.status === "new").length} require triage`,
+        delta: `${syntheticAlerts.filter((alert) => alert.status === "new").length} awaiting triage`,
         tone: "high",
+        tooltip: "Alerts stay intentionally dense in synthetic mode so queue states remain screenshot-ready.",
       },
       {
         label: "Active cases",
         value: caseTotal.toString(),
-        delta: `${syntheticCases.filter((item) => item.priority === 1).length} priority one`,
+        delta: `${syntheticCases.filter((item) => item.priority === 1).length} priority 1 investigations`,
         tone: "critical",
+        tooltip: "Case totals reflect the seeded attack progression across identity, endpoint, and exfiltration workflows.",
       },
       {
         label: "MTTD / MTTR",
         value: `${mttdMinutes}m / ${mttrMinutes}m`,
-        delta: "SOC benchmark portfolio view",
+        delta: "Synthetic benchmark profile",
         tone: "medium",
+        tooltip: "Mean time to detect and mean time to respond are synthetic benchmarks for portfolio presentation, not live SLA measurements.",
       },
     ],
     throughput,
@@ -1110,10 +1114,30 @@ export function getSyntheticOverview(intensity: number): OverviewSnapshot {
     })),
     topSources,
     watchlist: [
-      { label: "Credential misuse", value: "elevated", tone: "high" },
-      { label: "East-west movement", value: "active", tone: "critical" },
-      { label: "Exfil volume", value: "monitoring", tone: "medium" },
-      { label: "Demo dataset", value: "screenshot-ready", tone: "low" },
+      {
+        label: "Credential misuse",
+        value: "Elevated",
+        tone: "high",
+        context: "Repeated invalid logins are targeting bastion and VPN entry points.",
+      },
+      {
+        label: "East-west movement",
+        value: "Active",
+        tone: "critical",
+        context: "Administrative share access is chaining from the compromised workstation.",
+      },
+      {
+        label: "Exfiltration volume",
+        value: "Monitoring",
+        tone: "medium",
+        context: "Outbound transfer spikes remain below confirmed case-threshold volume.",
+      },
+      {
+        label: "Demo readiness",
+        value: "Ready",
+        tone: "low",
+        context: "Synthetic storylines are populated across events, alerts, cases, and ATT&CK coverage.",
+      },
     ],
   };
 }
@@ -1175,10 +1199,10 @@ export function getSyntheticAnalytics(intensity: number): AnalyticsSnapshot {
 
 export function getLivePreviewRecommendation(mode: DataSourceMode) {
   if (mode === "synthetic") {
-    return "Synthetic telemetry is enabled for screenshot coverage across every workflow.";
+    return "Synthetic telemetry is enabled across every workflow so the product stays fully populated for demos and screenshots.";
   }
 
-  return "Live API mode is active. Synthetic mode is still available when you want denser showcase telemetry for screenshots.";
+  return "Live APIs are active. Switch back to the synthetic walkthrough when you need denser showcase telemetry for screenshots.";
 }
 
 function techniqueName(techniqueId: string) {

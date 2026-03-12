@@ -194,12 +194,12 @@ export function RulesPage() {
 
       {reloadMessage ? (
         <DataPanel subtitle="Latest content sync" title="Rule loader">
-          <p className="table-message">{reloadMessage}</p>
+          <p className="toast-banner">{reloadMessage}</p>
         </DataPanel>
       ) : null}
 
-      {isLoading ? <p className="table-message">Loading rule catalog…</p> : null}
-      {isError ? <p className="table-message">Failed to load detection rules.</p> : null}
+      {isLoading ? <div className="loading-state"><span className="loading-spinner" />Loading rule catalog…</div> : null}
+      {isError ? <div className="error-state">Failed to load detection rules.</div> : null}
 
       {!isLoading && !isError ? (
         <div className="content-grid content-grid--wide">

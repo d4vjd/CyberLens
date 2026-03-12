@@ -14,6 +14,7 @@ import type {
   MitreTechniqueDetail,
 } from "../../shared/types";
 import { fetchJson } from "../../shared/utils/api";
+import { formatCountLabel, formatDateTime, humanizeIdentifier } from "../../shared/utils/format";
 import { getSyntheticMatrix, getSyntheticTechniqueDetail } from "../../shared/utils/mockData";
 
 function techniqueTone(technique: MitreTechnique): "neutral" | "low" | "medium" | "high" | "critical" {
@@ -75,14 +76,19 @@ export function MitrePage() {
         description="Inspect tactic coverage, select any technique for rule and alert detail, and use synthetic mode to fill the matrix for portfolio screenshots."
         actions={
           <StatusBadge
-            label={dataSource === "synthetic" ? "Synthetic coverage" : `${data?.tactics.length ?? 0} tactics loaded`}
+            label={dataSource === "synthetic" ? formatCountLabel(data?.tactics.length ?? 0, "tactic") : `${data?.tactics.length ?? 0} tactics loaded`}
             tone={dataSource === "synthetic" ? "connected" : "low"}
+            tooltip={
+              dataSource === "synthetic"
+                ? "Synthetic rules and detections are filling the ATT&CK matrix so each tactic stays populated."
+                : "The matrix is loaded from the live backend rule and alert inventory."
+            }
           />
         }
       />
 
-      {isLoading ? <p className="table-message">Loading ATT&CK matrix…</p> : null}
-      {isError ? <p className="table-message">Failed to load ATT&CK matrix.</p> : null}
+      {isLoading ? <div className="loading-state"><span className="loading-spinner" />Loading ATT&CK matrix…</div> : null}
+      {isError ? <div className="error-state">Failed to load ATT&CK matrix.</div> : null}
 
       {!isLoading && !isError && data ? (
         <div className="content-grid content-grid--wide">
@@ -91,8 +97,8 @@ export function MitrePage() {
               {data.tactics.map((column) => (
                 <div className="mitre-column-panel" key={column.tactic}>
                   <div className="mitre-column-panel__header">
-                    <strong>{column.tactic}</strong>
-                    <span>{column.techniques.length} techniques</span>
+                    <strong>{humanizeIdentifier(column.tactic)}</strong>
+                    <span>{formatCountLabel(column.techniques.length, "technique")}</span>
                   </div>
                   <div className="mitre-column">
                     {column.techniques.map((technique) => (
@@ -107,17 +113,17 @@ export function MitrePage() {
                         <div className="mitre-technique__header">
                           <strong>{technique.technique_id}</strong>
                           <StatusBadge
-                            label={`${technique.alert_count} alerts`}
+                            label={formatCountLabel(technique.alert_count, "alert")}
                             tone={techniqueTone(technique)}
                           />
                         </div>
                         <h5>{technique.name}</h5>
                         <p>{technique.description}</p>
                         <div className="mitre-technique__meta">
-                          <span>{technique.rule_count} rules</span>
+                          <span>{formatCountLabel(technique.rule_count, "rule")}</span>
                           <span>
                             {technique.last_alert_at
-                              ? new Date(technique.last_alert_at).toLocaleString()
+                              ? formatDateTime(technique.last_alert_at)
                               : "No alert yet"}
                           </span>
                         </div>
@@ -136,10 +142,10 @@ export function MitrePage() {
             {detail ? (
               <div className="detail-stack">
                 <div className="panel-badge-row">
-                  <StatusBadge label={detail.tactic} tone="neutral" />
-                  <StatusBadge label={`${detail.rule_count} rules`} tone="low" />
+                  <StatusBadge label={humanizeIdentifier(detail.tactic)} tone="neutral" />
+                  <StatusBadge label={formatCountLabel(detail.rule_count, "rule")} tone="low" />
                   <StatusBadge
-                    label={`${detail.alert_count} alerts`}
+                    label={formatCountLabel(detail.alert_count, "alert")}
                     tone={detail.alert_count ? "high" : "neutral"}
                   />
                 </div>
@@ -149,13 +155,21 @@ export function MitrePage() {
                     <span className="detail-label">Last alert</span>
                     <strong>
                       {detail.last_alert_at
-                        ? new Date(detail.last_alert_at).toLocaleString()
+                        ? formatDateTime(detail.last_alert_at)
                         : "No detections yet"}
                     </strong>
                   </div>
                   <div>
                     <span className="detail-label">Mapped rules</span>
-                    <strong>{detail.rule_ids.length}</strong>
+                    <strong>{formatCountLabel(detail.rule_ids.length, "rule")}</strong>
+                  </div>
+                  <div>
+                    <span className="detail-label">Tactic</span>
+                    <strong>{humanizeIdentifier(detail.tactic)}</strong>
+                  </div>
+                  <div>
+                    <span className="detail-label">Coverage stance</span>
+                    <strong>{detail.alert_count ? "Detected in alerts" : "Rule-only coverage"}</strong>
                   </div>
                 </div>
                 <div className="pill-list">

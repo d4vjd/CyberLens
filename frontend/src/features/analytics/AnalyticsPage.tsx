@@ -12,6 +12,14 @@ import type { AnalyticsOverviewResponse, AnalyticsSnapshot } from "../../shared/
 import { fetchJson } from "../../shared/utils/api";
 import { getSyntheticAnalytics } from "../../shared/utils/mockData";
 
+const chartTooltipStyle = {
+  background: "#18181b",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: 10,
+  fontSize: 12,
+  padding: "0.55rem 0.7rem",
+};
+
 async function fetchLiveAnalytics(): Promise<AnalyticsSnapshot> {
   const overview = await fetchJson<AnalyticsOverviewResponse>("/analytics/overview");
   return {
@@ -60,8 +68,8 @@ export function AnalyticsPage() {
         }
       />
 
-      {isLoading ? <p className="table-message">Loading analytics…</p> : null}
-      {isError ? <p className="table-message">Failed to build analytics snapshot.</p> : null}
+      {isLoading ? <div className="loading-state"><span className="loading-spinner" />Loading analytics…</div> : null}
+      {isError ? <div className="error-state">Failed to build analytics snapshot.</div> : null}
 
       {!isLoading && !isError && data ? (
         <>
@@ -80,12 +88,14 @@ export function AnalyticsPage() {
                     <XAxis dataKey="label" stroke="rgba(255,255,255,0.25)" tick={{ fontSize: 12 }} />
                     <YAxis stroke="rgba(255,255,255,0.25)" tick={{ fontSize: 12 }} />
                     <Tooltip
-                      contentStyle={{
-                        background: "#18181b",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: 6,
-                        fontSize: 12,
-                      }}
+                      contentStyle={chartTooltipStyle}
+                      cursor={{ stroke: "rgba(255,255,255,0.16)", strokeDasharray: "4 4" }}
+                      formatter={(value: number, name: string) => [
+                        value.toLocaleString(),
+                        name === "events" ? "Events" : "Alerts",
+                      ]}
+                      itemStyle={{ color: "#e5e7eb" }}
+                      labelStyle={{ color: "#e5e7eb", fontWeight: 600 }}
                     />
                     <Area dataKey="events" fill="url(#analyticsEvents)" stroke="#3dd8c5" strokeWidth={2} />
                     <Area dataKey="alerts" fill="rgba(249,115,22,0.08)" stroke="#f97316" strokeWidth={1.5} />

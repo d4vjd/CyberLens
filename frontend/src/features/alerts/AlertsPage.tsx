@@ -14,6 +14,14 @@ import { StatusBadge } from "../../shared/components/StatusBadge";
 import { useDebounce } from "../../shared/hooks/useDebounce";
 import type { AlertListResponse, AlertRecord } from "../../shared/types";
 import { fetchJson, postJson } from "../../shared/utils/api";
+import {
+  formatCountLabel,
+  formatDateTime,
+  formatNullable,
+  formatTechniqueMapping,
+  humanizeCompactStatus,
+  humanizeIdentifier,
+} from "../../shared/utils/format";
 import { getSyntheticAlerts } from "../../shared/utils/mockData";
 
 async function fetchLiveAlerts() {
@@ -94,8 +102,19 @@ export function AlertsPage() {
             <StatusBadge
               label={dataSource === "synthetic" ? "Synthetic queue" : `${unseenCount} unseen stream updates`}
               tone={dataSource === "synthetic" ? "connected" : unseenCount ? "high" : "neutral"}
+              tooltip={
+                dataSource === "synthetic"
+                  ? "The alert queue is powered by the bundled showcase detections."
+                  : unseenCount
+                    ? `${unseenCount} live stream updates have arrived since the queue was last reviewed.`
+                    : "No new live stream updates are waiting."
+              }
             />
-            <StatusBadge label={`${filteredAlerts.length} visible`} tone="neutral" />
+            <StatusBadge
+              label={`${filteredAlerts.length} visible`}
+              tone="neutral"
+              tooltip="Visible alerts after the current severity, status, and search filters are applied."
+            />
           </div>
         }
       />
@@ -116,10 +135,10 @@ export function AlertsPage() {
                 <div>
                   <strong>{alert.title}</strong>
                   <p>
-                    {alert.source_ip ?? "n/a"} · {alert.mitre_technique_id ?? "No ATT&CK mapping"}
+                    {formatNullable(alert.source_ip)} · {formatTechniqueMapping(alert.mitre_tactic, alert.mitre_technique_id)}
                   </p>
                 </div>
-                <StatusBadge label={alert.severity} tone={alert.severity} />
+                <StatusBadge label={humanizeIdentifier(alert.severity)} tone={alert.severity} />
               </article>
             ))}
           </div>
@@ -128,7 +147,7 @@ export function AlertsPage() {
 
       {actionMessage ? (
         <DataPanel subtitle="Latest workflow update" title="Escalation result">
-          <p className="table-message">{actionMessage}</p>
+          <p className="toast-banner">{actionMessage}</p>
         </DataPanel>
       ) : null}
 
@@ -153,8 +172,8 @@ export function AlertsPage() {
         </div>
       </DataPanel>
 
-      {isLoading ? <p className="table-message">Loading alert queue…</p> : null}
-      {isError ? <p className="table-message">Failed to load alerts from the selected data source.</p> : null}
+      {isLoading ? <div className="loading-state"><span className="loading-spinner" />Loading alert queue…</div> : null}
+      {isError ? <div className="error-state">Failed to load alerts from the selected data source.</div> : null}
 
       {!isLoading && !isError ? (
         <div className="content-grid content-grid--wide">
@@ -163,7 +182,7 @@ export function AlertsPage() {
               columns={[
                 {
                   header: "Created",
-                  render: (alert) => new Date(alert.created_at).toLocaleString(),
+                  render: (alert) => formatDateTime(alert.created_at),
                 },
                 {
                   header: "Title",
@@ -171,28 +190,39 @@ export function AlertsPage() {
                 },
                 {
                   header: "Source",
-                  render: (alert) => alert.source_ip ?? "n/a",
+                  render: (alert) => formatNullable(alert.source_ip),
                 },
                 {
                   header: "ATT&CK",
-                  render: (alert) =>
-                    alert.mitre_technique_id
-                      ? `${alert.mitre_tactic} / ${alert.mitre_technique_id}`
-                      : "n/a",
+                  render: (alert) => formatTechniqueMapping(alert.mitre_tactic, alert.mitre_technique_id),
                 },
                 {
                   header: "Status",
-                  render: (alert) => <StatusBadge label={alert.status} tone="neutral" />,
+                  render: (alert) => (
+                    <StatusBadge
+                      label={humanizeCompactStatus(alert.status)}
+                      tone="neutral"
+                      tooltip="Alert workflow state in the triage queue."
+                    />
+                  ),
                 },
                 {
                   header: "Severity",
-                  render: (alert) => <StatusBadge label={alert.severity} tone={alert.severity} />,
+                  render: (alert) => (
+                    <StatusBadge
+                      label={humanizeIdentifier(alert.severity)}
+                      tone={alert.severity}
+                      tooltip={`Severity assigned to ${alert.title}.`}
+                    />
+                  ),
                 },
               ]}
               emptyMessage="No alerts matched the current filter set."
               items={filteredAlerts}
               onRowClick={setSelectedAlert}
+              rowTitle={(alert) => `${alert.title} · ${formatTechniqueMapping(alert.mitre_tactic, alert.mitre_technique_id)}`}
               rowKey={(alert) => alert.alert_uid}
+              selectedRowKey={selectedAlert?.alert_uid ?? null}
             />
           </DataPanel>
 
@@ -203,30 +233,48 @@ export function AlertsPage() {
             {selectedAlert ? (
               <div className="detail-stack">
                 <div className="panel-badge-row">
-                  <StatusBadge label={selectedAlert.severity} tone={selectedAlert.severity} />
-                  <StatusBadge label={selectedAlert.status} tone="neutral" />
+                  <StatusBadge label={humanizeIdentifier(selectedAlert.severity)} tone={selectedAlert.severity} />
+                  <StatusBadge label={humanizeCompactStatus(selectedAlert.status)} tone="neutral" />
                   <StatusBadge
                     label={selectedAlert.mitre_technique_id ?? "Unmapped"}
                     tone={selectedAlert.mitre_technique_id ? "medium" : "neutral"}
                   />
                 </div>
+                <p className="detail-summary">
+                  {formatTechniqueMapping(selectedAlert.mitre_tactic, selectedAlert.mitre_technique_id)} · {selectedAlert.title}
+                </p>
                 <div className="detail-grid">
                   <div>
                     <span className="detail-label">Source IP</span>
-                    <strong>{selectedAlert.source_ip ?? "n/a"}</strong>
+                    <strong>{formatNullable(selectedAlert.source_ip)}</strong>
                   </div>
                   <div>
                     <span className="detail-label">Assigned</span>
-                    <strong>{selectedAlert.assigned_to ?? "Unassigned"}</strong>
+                    <strong>{formatNullable(selectedAlert.assigned_to, "Unassigned")}</strong>
                   </div>
                   <div>
                     <span className="detail-label">Created</span>
-                    <strong>{new Date(selectedAlert.created_at).toLocaleString()}</strong>
+                    <strong>{formatDateTime(selectedAlert.created_at)}</strong>
                   </div>
                   <div>
                     <span className="detail-label">Rule ID</span>
                     <strong>{selectedAlert.rule_id}</strong>
                   </div>
+                  <div>
+                    <span className="detail-label">ATT&CK tactic</span>
+                    <strong>{formatNullable(selectedAlert.mitre_tactic ? humanizeIdentifier(selectedAlert.mitre_tactic) : null)}</strong>
+                  </div>
+                  <div>
+                    <span className="detail-label">Matched events</span>
+                    <strong>{formatCountLabel(selectedAlert.matched_events.length, "event")}</strong>
+                  </div>
+                </div>
+                <div className="pill-list">
+                  {selectedAlert.matched_events.map((event, index) => (
+                    <span className="pill-chip" key={`${selectedAlert.alert_uid}-${index}`}>
+                      {typeof event.id === "number" ? `Event ${event.id}` : `Matched payload ${index + 1}`}
+                    </span>
+                  ))}
                 </div>
                 <div className="matched-events">
                   <span className="detail-label">Matched events</span>
@@ -245,7 +293,7 @@ export function AlertsPage() {
                   </button>
                 ) : (
                   <button className="primary-button" type="button">
-                    Open synthetic case draft
+                    Preview synthetic case workflow
                   </button>
                 )}
               </div>

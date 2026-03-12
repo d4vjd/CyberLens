@@ -11,6 +11,7 @@ import { PageIntro } from "../../shared/components/PageIntro";
 import { StatusBadge } from "../../shared/components/StatusBadge";
 import type { DemoStatusResponse, SettingsStatusResponse } from "../../shared/types";
 import { fetchJson, patchJson, postJson } from "../../shared/utils/api";
+import { humanizeIdentifier } from "../../shared/utils/format";
 import { getLivePreviewRecommendation, getSyntheticAnalysts } from "../../shared/utils/mockData";
 
 function toneForConnection(state: string) {
@@ -81,14 +82,27 @@ export function SettingsPage() {
     dataSource === "synthetic" ? getSyntheticAnalysts() : settingsQuery.data?.analysts ?? [];
   const liveDemo = settingsQuery.data?.demo ?? demoStatusQuery.data?.demo;
   const demoCounts = demoStatusQuery.data?.counts;
+  const connectionLabel =
+    dataSource === "live" && !liveStream ? "Paused" : humanizeIdentifier(connectionState);
+  const connectionTone = dataSource === "live" && !liveStream ? "neutral" : toneForConnection(connectionState);
 
   return (
     <div className="page-grid">
       <PageIntro
         eyebrow="Settings"
         title="Platform controls"
-        description="Switch between live APIs and the synthetic walkthrough, manage the backend demo pipeline, and keep the analyst roster visible for portfolio screenshots."
-        actions={<StatusBadge label={`${dataSource} mode`} tone={dataSource === "synthetic" ? "connected" : "low"} />}
+        description="Switch between live telemetry and the synthetic walkthrough, manage the demo pipeline, and keep showcase settings clear for screenshots."
+        actions={
+          <StatusBadge
+            label={dataSource === "synthetic" ? "Synthetic walkthrough" : "Live telemetry"}
+            tone={dataSource === "synthetic" ? "connected" : "low"}
+            tooltip={
+              dataSource === "synthetic"
+                ? "The workspace is currently using bundled showcase data."
+                : "The workspace is currently sourcing data from live backend APIs."
+            }
+          />
+        }
       />
 
       <div className="content-grid content-grid--wide">
@@ -103,6 +117,7 @@ export function SettingsPage() {
                 <button
                   className={dataSource === "live" ? "segmented-control__option segmented-control__option--active" : "segmented-control__option"}
                   onClick={() => setDataSource("live")}
+                  title="Use API-backed data from the running backend."
                   type="button"
                 >
                   Live
@@ -110,6 +125,7 @@ export function SettingsPage() {
                 <button
                   className={dataSource === "synthetic" ? "segmented-control__option segmented-control__option--active" : "segmented-control__option"}
                   onClick={() => setDataSource("synthetic")}
+                  title="Use bundled showcase telemetry with denser charts and seeded investigations."
                   type="button"
                 >
                   Synthetic
@@ -137,10 +153,24 @@ export function SettingsPage() {
             <label className="setting-row">
               <div>
                 <strong>Live WebSocket stream</strong>
-                <p>Keep alert stream updates visible while browsing the queue.</p>
+                <p>
+                  {dataSource === "synthetic"
+                    ? "Applies when you return to live telemetry. Synthetic mode bypasses the live alert stream."
+                    : "Keep alert stream updates visible while browsing the queue."}
+                </p>
               </div>
-              <button className="ghost-button ghost-button--compact" onClick={() => setLiveStream(!liveStream)} type="button">
-                {liveStream ? "Disable" : "Enable"}
+              <button
+                className="ghost-button ghost-button--compact"
+                disabled={dataSource === "synthetic"}
+                onClick={() => setLiveStream(!liveStream)}
+                title={
+                  dataSource === "synthetic"
+                    ? "Switch to live telemetry to manage the WebSocket alert stream."
+                    : "Toggle the live alert stream without leaving the current page."
+                }
+                type="button"
+              >
+                {liveStream ? "Pause stream" : "Resume stream"}
               </button>
             </label>
 
@@ -154,7 +184,7 @@ export function SettingsPage() {
                 onClick={() => setPreferSyntheticForScreenshots(!preferSyntheticForScreenshots)}
                 type="button"
               >
-                {preferSyntheticForScreenshots ? "Preferred" : "Not preferred"}
+                {preferSyntheticForScreenshots ? "Preferred" : "Manual"}
               </button>
             </label>
 
@@ -174,23 +204,39 @@ export function SettingsPage() {
           <div className="watchlist-grid">
             <article className="watchlist-card">
               <span>Connection</span>
-              <strong>{connectionState}</strong>
-              <StatusBadge label={connectionState} tone={toneForConnection(connectionState)} />
+              <strong>{dataSource === "synthetic" ? "Bypassed" : connectionLabel}</strong>
+              <StatusBadge
+                label={dataSource === "synthetic" ? "Synthetic bypass" : connectionLabel}
+                tone={connectionTone}
+                tooltip="Current state of the live alert-stream bridge. Synthetic mode bypasses the live socket."
+              />
             </article>
             <article className="watchlist-card">
               <span>Data source</span>
-              <strong>{dataSource}</strong>
-              <StatusBadge label={dataSource} tone={dataSource === "synthetic" ? "connected" : "neutral"} />
+              <strong>{dataSource === "synthetic" ? "Synthetic walkthrough" : "Live APIs"}</strong>
+              <StatusBadge
+                label={dataSource === "synthetic" ? "Synthetic dataset" : "Live dataset"}
+                tone={dataSource === "synthetic" ? "connected" : "neutral"}
+                tooltip="Controls whether each page reads bundled demo data or backend API responses."
+              />
             </article>
             <article className="watchlist-card">
               <span>Theme</span>
-              <strong>{theme}</strong>
-              <StatusBadge label={theme} tone="neutral" />
+              <strong>{humanizeIdentifier(theme)}</strong>
+              <StatusBadge
+                label={`${humanizeIdentifier(theme)} theme`}
+                tone="neutral"
+                tooltip="Theme preference applies across the full shell, including charts, cards, and navigation."
+              />
             </article>
             <article className="watchlist-card">
-              <span>Screenshot mode</span>
-              <strong>{preferSyntheticForScreenshots ? "ready" : "manual"}</strong>
-              <StatusBadge label={`L${intensity}`} tone="medium" />
+              <span>Screenshot preset</span>
+              <strong>{preferSyntheticForScreenshots ? "Preferred" : "Manual"}</strong>
+              <StatusBadge
+                label={`Intensity ${intensity}/10`}
+                tone="medium"
+                tooltip="The current synthetic intensity used for screenshot and demo density."
+              />
             </article>
           </div>
         </DataPanel>
@@ -208,6 +254,7 @@ export function SettingsPage() {
                 className="primary-button"
                 disabled={seedMutation.isPending}
                 onClick={() => seedMutation.mutate()}
+                title="Inject the bundled attack storyline into the live backend so events, alerts, cases, and ATT&CK coverage populate together."
                 type="button"
               >
                 {seedMutation.isPending ? "Seeding…" : "Seed live demo data"}
@@ -228,6 +275,7 @@ export function SettingsPage() {
                     intensity,
                   })
                 }
+                title="Toggle the backend demo generator without leaving live API mode."
                 type="button"
               >
                 {liveDemo?.enabled ? "Stop generator" : "Start generator"}
@@ -248,6 +296,7 @@ export function SettingsPage() {
                     enabled: liveDemo?.enabled ?? false,
                   })
                 }
+                title="Push the current synthetic intensity value into the live backend generator configuration."
                 type="button"
               >
                 Sync intensity
@@ -260,10 +309,11 @@ export function SettingsPage() {
           <div className="watchlist-grid">
             <article className="watchlist-card">
               <span>Generator</span>
-              <strong>{liveDemo?.generator_status ?? "n/a"}</strong>
+              <strong>{liveDemo?.generator_status ? humanizeIdentifier(liveDemo.generator_status) : "Not available"}</strong>
               <StatusBadge
                 label={liveDemo?.enabled ? "enabled" : "disabled"}
                 tone={liveDemo?.enabled ? "connected" : "neutral"}
+                tooltip="Shows whether the live backend demo generator is actively producing new telemetry."
               />
             </article>
             <article className="watchlist-card">
