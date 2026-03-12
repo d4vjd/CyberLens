@@ -1,4 +1,4 @@
-<![CDATA[# API Reference
+# API Reference
 
 All endpoints are served under the `/api/v1` prefix via the nginx reverse proxy.
 
