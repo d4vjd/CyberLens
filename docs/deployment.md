@@ -1,4 +1,4 @@
-<![CDATA[# Deployment
+# Deployment
 
 CyberLens is deployed as a Docker Compose stack. This document covers both production-like and development deployments.
 
