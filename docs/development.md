@@ -1,4 +1,4 @@
-<![CDATA[# Development
+# Development
 
 This guide covers the local development workflow for CyberLens.
 
@@ -138,4 +138,3 @@ Toggle from the **Settings** page. Synthetic mode renders a dense local dataset 
 | `make test` | Run backend tests with coverage |
 | `make lint` | Full lint pipeline |
 | `make logs` | Tail live logs from all services |
-]]>
