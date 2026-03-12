@@ -1,4 +1,4 @@
-<![CDATA[# Architecture
+# Architecture
 
 CyberLens is structured as a FastAPI backend with MySQL persistence, Redis-backed streaming, and a React/Vite dashboard served through nginx.
 
