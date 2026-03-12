@@ -6,10 +6,14 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from cyberlens.main import app
-from cyberlens.settings.router import get_settings_service
-from cyberlens.settings.schemas import AnalystSummary, DemoSettings, SettingsStatusResponse, SystemConfigItem
-from cyberlens.settings.service import SettingsService
 from cyberlens.settings.models import AnalystRole
+from cyberlens.settings.router import get_settings_service
+from cyberlens.settings.schemas import (
+    AnalystSummary,
+    DemoSettings,
+    SettingsStatusResponse,
+    SystemConfigItem,
+)
 
 
 class FakeSettingsService:

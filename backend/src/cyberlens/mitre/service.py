@@ -60,13 +60,18 @@ class MitreAttackService:
                 technique_id=technique_id,
                 name=obj.get("name", technique_id),
                 description=obj.get("description", ""),
-                tactics=obj.get("x_mitre_tactic_type") or obj.get("kill_chain_phases_tactics") or obj.get("x_mitre_tactics") or [],
+                tactics=obj.get("x_mitre_tactic_type")
+                or obj.get("kill_chain_phases_tactics")
+                or obj.get("x_mitre_tactics")
+                or [],
             )
 
             if not techniques[technique_id].tactics:
                 phases = obj.get("kill_chain_phases", [])
                 techniques[technique_id].tactics = [
-                    phase.get("phase_name", "").replace("-", " ") for phase in phases if phase.get("phase_name")
+                    phase.get("phase_name", "").replace("-", " ")
+                    for phase in phases
+                    if phase.get("phase_name")
                 ]
         self.techniques = techniques
 

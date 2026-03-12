@@ -5,9 +5,9 @@
 
 from __future__ import annotations
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision = "20260312_0001"
 down_revision = None
@@ -16,9 +16,7 @@ depends_on = None
 
 
 severity_enum = sa.Enum("low", "medium", "high", "critical", name="severitylevel")
-rule_type_enum = sa.Enum(
-    "threshold", "pattern", "sequence", "aggregation", name="ruletype"
-)
+rule_type_enum = sa.Enum("threshold", "pattern", "sequence", "aggregation", name="ruletype")
 alert_status_enum = sa.Enum(
     "new", "acknowledged", "investigating", "resolved", "false_positive", name="alertstatus"
 )
@@ -227,7 +225,9 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table("system_config")
     op.drop_table("analysts")
-    op.drop_index("ix_mitre_technique_coverage_technique_tactic", table_name="mitre_technique_coverage")
+    op.drop_index(
+        "ix_mitre_technique_coverage_technique_tactic", table_name="mitre_technique_coverage"
+    )
     op.drop_table("mitre_technique_coverage")
     op.drop_table("response_actions")
     op.drop_table("case_evidence")

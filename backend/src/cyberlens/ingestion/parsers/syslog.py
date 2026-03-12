@@ -13,17 +13,20 @@ RFC3164_RE = re.compile(
     r"(?P<hostname>\S+) (?P<tag>[\w\-/\.]+)(?:\[(?P<pid>\d+)\])?: (?P<message>.*)$"
 )
 RFC5424_RE = re.compile(
-    r"^<(?P<priority>\d+)>(?P<version>\d+) (?P<timestamp>\S+) (?P<hostname>\S+) "
-    r"(?P<appname>\S+) (?P<procid>\S+) (?P<msgid>\S+) (?P<structured_data>(?:-|\[.*?\])) (?P<message>.*)$"
+    r"^<(?P<priority>\d+)>(?P<version>\d+) (?P<timestamp>\S+) "
+    r"(?P<hostname>\S+) (?P<appname>\S+) (?P<procid>\S+) "
+    r"(?P<msgid>\S+) (?P<structured_data>(?:-|\[.*?\])) "
+    r"(?P<message>.*)$"
 )
 KV_RE = re.compile(r"(?P<key>[A-Za-z0-9_.-]+)=(?P<value>\"[^\"]+\"|\S+)")
 SSH_FAILED_RE = re.compile(
-    r"Failed password for (?:invalid user )?(?P<username>\S+) from (?P<source_ip>\S+) port (?P<port>\d+)"
+    r"Failed password for (?:invalid user )?(?P<username>\S+) "
+    r"from (?P<source_ip>\S+) port (?P<port>\d+)"
 )
 
 
-def _extract_key_values(message: str) -> dict[str, str]:
-    parsed: dict[str, str] = {}
+def _extract_key_values(message: str) -> dict[str, object]:
+    parsed: dict[str, object] = {}
     for match in KV_RE.finditer(message):
         parsed[match.group("key").lower()] = match.group("value").strip('"')
     return parsed

@@ -8,10 +8,10 @@ from collections.abc import Awaitable, Callable
 from typing import Any
 
 from cyberlens.config import Settings
+from cyberlens.db.session import SessionLocal
 from cyberlens.ingestion.schemas import IngestSingleRequest
 from cyberlens.ingestion.service import IngestionService
 from cyberlens.streaming.redis_client import build_redis_client
-from cyberlens.db.session import SessionLocal
 
 
 class _SyslogDatagramProtocol(asyncio.DatagramProtocol):
@@ -19,7 +19,7 @@ class _SyslogDatagramProtocol(asyncio.DatagramProtocol):
         self.handler = handler
 
     def datagram_received(self, data: bytes, addr: tuple[Any, ...]) -> None:
-        asyncio.create_task(self.handler(data.decode("utf-8", errors="replace"), addr))
+        asyncio.create_task(self.handler(data.decode("utf-8", errors="replace"), addr))  # type: ignore[arg-type]
 
 
 class SyslogReceiver:

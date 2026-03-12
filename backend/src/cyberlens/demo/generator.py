@@ -6,10 +6,10 @@ from __future__ import annotations
 import asyncio
 import random
 from contextlib import suppress
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from cyberlens.common.time_utils import utc_now
 from cyberlens.demo.service import DemoService
@@ -18,13 +18,13 @@ from cyberlens.ingestion.models import SeverityLevel
 
 
 class DemoGenerator:
-    def __init__(self, session_factory: async_sessionmaker, redis: Redis) -> None:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession], redis: Redis) -> None:
         self.session_factory = session_factory
         self.redis = redis
         self._task: asyncio.Task[None] | None = None
         self._running = False
         self._intensity = 5
-        self._rng = random.Random(20260312)
+        self._rng = random.Random(20260312)  # nosec B311
         self._attack_step = 0
 
     @property
@@ -74,7 +74,7 @@ class DemoGenerator:
         specs.sort(key=lambda item: item.timestamp)
         return specs
 
-    def _build_attack_events(self, timestamp, attack_count: int) -> list[DemoEventSpec]:
+    def _build_attack_events(self, timestamp: datetime, attack_count: int) -> list[DemoEventSpec]:
         builders = (
             self._build_scan_fragment,
             self._build_brute_force_fragment,
@@ -86,7 +86,7 @@ class DemoGenerator:
         self._attack_step += 1
         return [builder(timestamp, index) for index in range(attack_count)]
 
-    def _build_baseline_event(self, timestamp) -> DemoEventSpec:
+    def _build_baseline_event(self, timestamp: datetime) -> DemoEventSpec:
         hostnames = (
             ("web-prod-01", "10.20.1.10"),
             ("api-prod-02", "10.20.1.22"),
@@ -103,8 +103,8 @@ class DemoGenerator:
             event_type=event_type,
             source_system=source_system,
             raw_log=(
-                f'SRC={source_ip} DST={dest_ip} PROTO=TCP SPT={self._rng.randint(40000, 65000)} '
-                f'DPT={dest_port} ACTION={action}'
+                f"SRC={source_ip} DST={dest_ip} PROTO=TCP SPT={self._rng.randint(40000, 65000)} "
+                f"DPT={dest_port} ACTION={action}"
             ),
             severity=SeverityLevel.LOW,
             source_ip=source_ip,
@@ -119,13 +119,16 @@ class DemoGenerator:
             parsed_data={"scenario": "generator", "profile": "baseline"},
         )
 
-    def _build_scan_fragment(self, timestamp, index: int) -> DemoEventSpec:
+    def _build_scan_fragment(self, timestamp: datetime, index: int) -> DemoEventSpec:
         port = (20 + self._attack_step + index) % 10000
         return DemoEventSpec(
             timestamp=timestamp + timedelta(milliseconds=index * 200),
             event_type="network",
             source_system="netflow",
-            raw_log=f"SRC=203.0.113.17 DST=10.20.1.44 PROTO=TCP SPT={40200 + index} DPT={port} FLAGS=SYN",
+            raw_log=(
+                f"SRC=203.0.113.17 DST=10.20.1.44 PROTO=TCP "
+                f"SPT={40200 + index} DPT={port} FLAGS=SYN"
+            ),
             severity=SeverityLevel.MEDIUM,
             source_ip="203.0.113.17",
             dest_ip="10.20.1.44",
@@ -138,7 +141,7 @@ class DemoGenerator:
             parsed_data={"scenario": "generator", "attack": "port_scan"},
         )
 
-    def _build_brute_force_fragment(self, timestamp, index: int) -> DemoEventSpec:
+    def _build_brute_force_fragment(self, timestamp: datetime, index: int) -> DemoEventSpec:
         port = 51100 + ((self._attack_step + index) % 200)
         return DemoEventSpec(
             timestamp=timestamp + timedelta(milliseconds=index * 250),
@@ -161,12 +164,15 @@ class DemoGenerator:
             parsed_data={"scenario": "generator", "attack": "brute_force"},
         )
 
-    def _build_lateral_fragment(self, timestamp, index: int) -> DemoEventSpec:
+    def _build_lateral_fragment(self, timestamp: datetime, index: int) -> DemoEventSpec:
         return DemoEventSpec(
             timestamp=timestamp + timedelta(milliseconds=index * 300),
             event_type="network",
             source_system="windows",
-            raw_log=f"SRC=10.20.4.88 DST=10.20.5.{14 + index} PROTO=TCP SPT={41000 + index} DPT=445 ACTION=allowed",
+            raw_log=(
+                f"SRC=10.20.4.88 DST=10.20.5.{14 + index} PROTO=TCP "
+                f"SPT={41000 + index} DPT=445 ACTION=allowed"
+            ),
             severity=SeverityLevel.HIGH,
             source_ip="10.20.4.88",
             dest_ip=f"10.20.5.{14 + index}",
@@ -180,7 +186,7 @@ class DemoGenerator:
             parsed_data={"scenario": "generator", "attack": "lateral_movement"},
         )
 
-    def _build_privilege_fragment(self, timestamp, index: int) -> DemoEventSpec:
+    def _build_privilege_fragment(self, timestamp: datetime, index: int) -> DemoEventSpec:
         del index
         return DemoEventSpec(
             timestamp=timestamp,
@@ -196,7 +202,7 @@ class DemoGenerator:
             parsed_data={"scenario": "generator", "attack": "privilege_escalation"},
         )
 
-    def _build_exfil_fragment(self, timestamp, index: int) -> DemoEventSpec:
+    def _build_exfil_fragment(self, timestamp: datetime, index: int) -> DemoEventSpec:
         return DemoEventSpec(
             timestamp=timestamp + timedelta(milliseconds=index * 150),
             event_type="dns",

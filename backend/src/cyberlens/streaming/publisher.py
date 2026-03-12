@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, cast
 
 from redis.asyncio import Redis
 
@@ -45,7 +45,7 @@ def _serialize_alert(alert: Alert) -> dict[str, str]:
 
 async def publish_event(redis: Redis, payload: dict[str, Any]) -> str:
     serialized = {key: str(value) for key, value in payload.items()}
-    return await redis.xadd(get_event_stream_name(), serialized)
+    return cast(str, await redis.xadd(get_event_stream_name(), serialized))  # type: ignore[arg-type]
 
 
 async def publish_events(redis: Redis, events: list[Event]) -> None:
@@ -54,4 +54,4 @@ async def publish_events(redis: Redis, events: list[Event]) -> None:
 
 
 async def publish_alert(redis: Redis, alert: Alert) -> str:
-    return await redis.xadd(get_alert_stream_name(), _serialize_alert(alert))
+    return cast(str, await redis.xadd(get_alert_stream_name(), _serialize_alert(alert)))  # type: ignore[arg-type]

@@ -19,7 +19,7 @@ from cyberlens.demo.seed import build_seed_dataset
 from cyberlens.demo.types import DemoEventSpec
 from cyberlens.detection.models import Alert
 from cyberlens.detection.service import DetectionService
-from cyberlens.incidents.models import Case
+from cyberlens.incidents.models import Case, CaseStatus, ResponseActionType
 from cyberlens.incidents.schemas import (
     CaseCommentRequest,
     CaseFromAlertRequest,
@@ -30,7 +30,6 @@ from cyberlens.incidents.schemas import (
 from cyberlens.incidents.service import IncidentService
 from cyberlens.ingestion.models import Event, SeverityLevel
 from cyberlens.settings.service import SettingsService
-from cyberlens.incidents.models import CaseStatus, ResponseActionType
 
 DEMO_CASE_PREFIX = "DEMO:"
 logger = logging.getLogger(__name__)
@@ -50,16 +49,25 @@ class DemoService:
     async def get_status(self) -> DemoStatusResponse:
         settings_service = SettingsService(self.session)
         await settings_service.ensure_defaults()
-        return DemoStatusResponse(demo=await settings_service.get_demo_settings(), counts=await self.get_counts())
+        return DemoStatusResponse(
+            demo=await settings_service.get_demo_settings(), counts=await self.get_counts()
+        )
 
     async def get_counts(self) -> DemoCounts:
         event_count = int(
-            (await self.session.scalar(select(func.count()).select_from(Event).where(Event.is_demo.is_(True)))) or 0
+            (
+                await self.session.scalar(
+                    select(func.count()).select_from(Event).where(Event.is_demo.is_(True))
+                )
+            )
+            or 0
         )
         case_count = int(
             (
                 await self.session.scalar(
-                    select(func.count()).select_from(Case).where(Case.title.like(f"{DEMO_CASE_PREFIX}%"))
+                    select(func.count())
+                    .select_from(Case)
+                    .where(Case.title.like(f"{DEMO_CASE_PREFIX}%"))
                 )
             )
             or 0
@@ -95,7 +103,10 @@ class DemoService:
                 created_cases=0,
                 seeded_at=seeded_at,
                 skipped=True,
-                message="Demo dataset already exists. Seed was skipped to avoid duplicating showcase data.",
+                message=(
+                    "Demo dataset already exists."
+                    " Seed was skipped to avoid duplicating showcase data."
+                ),
             )
 
         settings = get_settings()
@@ -132,7 +143,9 @@ class DemoService:
         alerts: list[GeneratedAlertSeed] = []
         for event_id in event_ids:
             generated = await detection_service.process_stream_event({"id": str(event_id)})
-            alert_seeds = [GeneratedAlertSeed(id=alert.id, title=alert.title) for alert in generated]
+            alert_seeds = [
+                GeneratedAlertSeed(id=alert.id, title=alert.title) for alert in generated
+            ]
             if tag_alerts_as_seeded:
                 for alert in generated:
                     alert.assigned_to = "demo-seeded"
@@ -186,7 +199,9 @@ class DemoService:
                 case.case_uid,
                 PlaybookRunRequest(actor="ahassan", playbook_id="brute_force_response"),
                 fallback_actor="ahassan",
-                fallback_summary="Playbook asset unavailable during demo seed; manual workflow left in place.",
+                fallback_summary=(
+                    "Playbook asset unavailable during demo seed;" " manual workflow left in place."
+                ),
             )
             created_case_uids.append(case.case_uid)
 
@@ -235,7 +250,10 @@ class DemoService:
                 case.case_uid,
                 PlaybookRunRequest(actor="mreyes", playbook_id="data_exfiltration_response"),
                 fallback_actor="mreyes",
-                fallback_summary="Playbook asset unavailable during demo seed; containment notes recorded manually.",
+                fallback_summary=(
+                    "Playbook asset unavailable during demo seed;"
+                    " containment notes recorded manually."
+                ),
             )
             await incident_service.add_comment(
                 case.case_uid,

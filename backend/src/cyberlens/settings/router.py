@@ -8,7 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from cyberlens.demo.generator import DemoGenerator
 from cyberlens.dependencies import get_db_session
-from cyberlens.settings.schemas import DemoSettings, DemoSettingsUpdate, SettingsStatusResponse, SystemConfigItem
+from cyberlens.settings.schemas import (
+    AnalystSummary,
+    DemoSettings,
+    DemoSettingsUpdate,
+    SettingsStatusResponse,
+    SystemConfigItem,
+)
 from cyberlens.settings.service import SettingsService
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -34,7 +40,7 @@ async def settings_status(
 @router.get("/analysts")
 async def list_analysts(
     service: SettingsService = Depends(get_settings_service),
-):
+) -> list[AnalystSummary]:
     await service.ensure_defaults()
     return await service.list_analysts()
 

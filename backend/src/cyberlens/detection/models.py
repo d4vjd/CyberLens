@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, JSON, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cyberlens.db.base import Base, TimestampMixin
@@ -64,7 +64,7 @@ class Alert(Base, TimestampMixin):
     matched_events: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list, nullable=False)
     assigned_to: Mapped[str | None] = mapped_column(String(255))
 
-    rule: Mapped["DetectionRule"] = relationship()
+    rule: Mapped[DetectionRule] = relationship()
 
 
 class MitreTechniqueCoverage(Base, TimestampMixin):

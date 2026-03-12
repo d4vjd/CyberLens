@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from cyberlens.detection.models import AlertStatus, RuleType
 from cyberlens.detection.router import get_detection_service
 from cyberlens.detection.schemas import (
     AlertDetail,
@@ -13,7 +14,6 @@ from cyberlens.detection.schemas import (
     RuleMutationResponse,
     RuleSummary,
 )
-from cyberlens.detection.models import AlertStatus, RuleType
 from cyberlens.ingestion.models import SeverityLevel
 from cyberlens.main import app
 
@@ -132,9 +132,13 @@ def test_list_alerts_endpoint(client) -> None:
 
 def test_save_rule_endpoint(client) -> None:
     app.dependency_overrides[get_detection_service] = override_detection_service
+    rule_yaml = (
+        "id: brute_force_ssh\ntitle: SSH Brute Force Attempt"
+        "\nseverity: high\ntype: threshold\ndetection: {}"
+    )
     response = client.post(
         "/api/v1/rules",
-        json={"yaml": "id: brute_force_ssh\ntitle: SSH Brute Force Attempt\nseverity: high\ntype: threshold\ndetection: {}"},
+        json={"yaml": rule_yaml},
     )
     app.dependency_overrides.pop(get_detection_service, None)
 
@@ -144,10 +148,14 @@ def test_save_rule_endpoint(client) -> None:
 
 def test_rule_historical_test_endpoint(client) -> None:
     app.dependency_overrides[get_detection_service] = override_detection_service
+    rule_yaml = (
+        "id: brute_force_ssh\ntitle: SSH Brute Force Attempt"
+        "\nseverity: high\ntype: threshold\ndetection: {}"
+    )
     response = client.post(
         "/api/v1/rules/test",
         json={
-            "yaml": "id: brute_force_ssh\ntitle: SSH Brute Force Attempt\nseverity: high\ntype: threshold\ndetection: {}",
+            "yaml": rule_yaml,
             "limit": 250,
         },
     )

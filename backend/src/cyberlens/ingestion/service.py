@@ -16,9 +16,9 @@ from cyberlens.ingestion.schemas import (
     EventDetail,
     EventListResponse,
     EventQueryParams,
+    IngestedEventSummary,
     IngestResponse,
     IngestSingleRequest,
-    IngestedEventSummary,
 )
 from cyberlens.streaming.publisher import publish_events
 
@@ -41,7 +41,9 @@ class IngestionService:
         try:
             for start in range(0, len(payloads), 500):
                 chunk = payloads[start : start + 500]
-                batch: list[tuple[Event, str]] = [self.pipeline.process(payload) for payload in chunk]
+                batch: list[tuple[Event, str]] = [
+                    self.pipeline.process(payload) for payload in chunk
+                ]
                 for event, _ in batch:
                     self.session.add(event)
                 await self.session.flush()

@@ -5,9 +5,14 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from cyberlens.ingestion.router import get_ingestion_service
-from cyberlens.ingestion.schemas import EventDetail, EventListResponse, IngestResponse, IngestedEventSummary
 from cyberlens.ingestion.models import SeverityLevel
+from cyberlens.ingestion.router import get_ingestion_service
+from cyberlens.ingestion.schemas import (
+    EventDetail,
+    EventListResponse,
+    IngestedEventSummary,
+    IngestResponse,
+)
 from cyberlens.main import app
 
 

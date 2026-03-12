@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     app_name: str = "CyberLens SIEM"
     app_env: str = "development"
-    app_host: str = "0.0.0.0"
+    app_host: str = "0.0.0.0"  # nosec B104
     app_port: int = 8000
     api_prefix: str = "/api/v1"
     debug: bool = True
@@ -40,12 +40,12 @@ class Settings(BaseSettings):
     redis_alert_stream: str = "cyberlens:alerts"
 
     syslog_enabled: bool = False
-    syslog_bind_host: str = "0.0.0.0"
+    syslog_bind_host: str = "0.0.0.0"  # nosec B104
     syslog_bind_port: int = 514
     rules_path: str = "../rules"
     playbooks_path: str = "../playbooks"
     mitre_bundle_path: str = "src/cyberlens/mitre/data/enterprise-attack.json"
-    evidence_dir: str = "/tmp/cyberlens-evidence"
+    evidence_dir: str = "/tmp/cyberlens-evidence"  # nosec B108
     detection_consumer_group: str = "detection-engine"
     detection_consumer_name: str = "backend-1"
     detection_poll_ms: int = 1000

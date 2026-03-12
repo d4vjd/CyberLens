@@ -10,7 +10,6 @@ from cyberlens.common.time_utils import utc_now
 from cyberlens.ingestion.models import Event, SeverityLevel
 from cyberlens.ingestion.schemas import IngestSingleRequest
 
-
 SEVERITY_ALIASES = {
     "informational": SeverityLevel.LOW,
     "info": SeverityLevel.LOW,

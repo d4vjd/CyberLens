@@ -8,11 +8,15 @@ import logging
 from contextlib import suppress
 
 from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from cyberlens.config import get_settings
 from cyberlens.detection.service import DetectionService
-from cyberlens.streaming.consumer import ack_stream_message, ensure_consumer_group, read_stream_group
+from cyberlens.streaming.consumer import (
+    ack_stream_message,
+    ensure_consumer_group,
+    read_stream_group,
+)
 from cyberlens.streaming.redis_client import get_alert_stream_name, get_event_stream_name
 
 logger = logging.getLogger(__name__)
@@ -21,7 +25,7 @@ logger = logging.getLogger(__name__)
 class DetectionEngine:
     def __init__(
         self,
-        session_factory: async_sessionmaker,
+        session_factory: async_sessionmaker[AsyncSession],
         redis: Redis,
     ) -> None:
         settings = get_settings()

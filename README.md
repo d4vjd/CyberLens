@@ -1,4 +1,4 @@
-<![CDATA[# CyberLens SIEM
+# CyberLens SIEM
 
 [![CI](https://github.com/d4vjd/CyberLens/actions/workflows/ci.yml/badge.svg)](https://github.com/d4vjd/CyberLens/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/d4vjd/CyberLens/actions/workflows/codeql.yml/badge.svg)](https://github.com/d4vjd/CyberLens/actions/workflows/codeql.yml)
@@ -203,4 +203,3 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development flow, coding standards, a
 ## License
 
 This project is licensed under the [Hippocratic License 3.0](LICENSE).
-]]>

@@ -7,8 +7,8 @@ from collections.abc import AsyncIterator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from cyberlens.config import get_settings
 import cyberlens.db.models  # noqa: F401
+from cyberlens.config import get_settings
 
 settings = get_settings()
 

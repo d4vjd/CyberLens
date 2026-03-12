@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from cyberlens.ingestion.models import Event
 from cyberlens.ingestion.normalizer import normalize_event
 from cyberlens.ingestion.parsers import ParserRegistry, get_default_parser_registry
 from cyberlens.ingestion.schemas import IngestSingleRequest
@@ -12,7 +13,7 @@ class LogIngestionPipeline:
     def __init__(self, registry: ParserRegistry | None = None) -> None:
         self.registry = registry or get_default_parser_registry()
 
-    def process(self, payload: IngestSingleRequest):
+    def process(self, payload: IngestSingleRequest) -> tuple[Event, str]:
         parser = self.registry.detect(payload.raw_log, payload.source_type)
         parsed = parser.parse(payload.raw_log)
         event = normalize_event(payload=payload, parsed=parsed, parser_name=parser.parser_name)

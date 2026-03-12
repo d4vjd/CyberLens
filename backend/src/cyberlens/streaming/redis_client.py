@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 from redis.asyncio import Redis
 
 from cyberlens.config import get_settings
@@ -10,7 +12,7 @@ from cyberlens.config import get_settings
 
 def build_redis_client() -> Redis:
     settings = get_settings()
-    return Redis.from_url(settings.redis_url, decode_responses=True)
+    return cast(Redis, Redis.from_url(settings.redis_url, decode_responses=True))
 
 
 def get_event_stream_name() -> str:

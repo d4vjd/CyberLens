@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from redis.asyncio import Redis
 from redis.exceptions import ResponseError
@@ -25,13 +25,14 @@ async def read_stream_group(
     count: int = 100,
     block: int | None = None,
 ) -> list[tuple[str, list[tuple[str, dict[str, Any]]]]]:
-    return await redis.xreadgroup(
+    result = await redis.xreadgroup(
         groupname=group_name,
         consumername=consumer_name,
         streams={stream_name: ">"},
         count=count,
         block=block,
     )
+    return cast(list[tuple[str, list[tuple[str, dict[str, Any]]]]], result)
 
 
 async def ack_stream_message(

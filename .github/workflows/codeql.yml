@@ -23,5 +23,13 @@ jobs:
       - uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-      - uses: github/codeql-action/autobuild@v3
+      - if: matrix.language == 'python'
+        run: |
+          cd backend
+          pip install -e .
+      - if: matrix.language == 'javascript-typescript'
+        run: |
+          cd frontend
+          npm install
+          npm run build
       - uses: github/codeql-action/analyze@v3

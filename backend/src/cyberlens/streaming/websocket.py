@@ -12,7 +12,11 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from redis.asyncio import Redis
 
 from cyberlens.config import get_settings
-from cyberlens.streaming.consumer import ack_stream_message, ensure_consumer_group, read_stream_group
+from cyberlens.streaming.consumer import (
+    ack_stream_message,
+    ensure_consumer_group,
+    read_stream_group,
+)
 from cyberlens.streaming.redis_client import get_alert_stream_name
 
 router = APIRouter(prefix="/ws", tags=["streaming"])
@@ -46,7 +50,9 @@ class AlertBroadcastHub:
     async def start(self, redis: Redis) -> None:
         settings = get_settings()
         self._redis = redis
-        await ensure_consumer_group(redis, get_alert_stream_name(), settings.websocket_consumer_group)
+        await ensure_consumer_group(
+            redis, get_alert_stream_name(), settings.websocket_consumer_group
+        )
         self._running = True
         self._task = asyncio.create_task(
             self._run(redis, settings.websocket_consumer_group, settings.websocket_consumer_name),
@@ -85,7 +91,9 @@ class AlertBroadcastHub:
                                 "type": "alert",
                                 "payload": {
                                     **payload,
-                                    "matched_events": json.loads(payload.get("matched_events", "[]")),
+                                    "matched_events": json.loads(
+                                        payload.get("matched_events", "[]")
+                                    ),
                                 },
                             }
                         )

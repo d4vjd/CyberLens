@@ -21,8 +21,8 @@ def build_lateral_movement_scenario(anchor: datetime, intensity: int) -> list[De
             event_type="network",
             source_system="windows",
             raw_log=(
-                f'SRC={source_ip} DST={hosts[index % len(hosts)]} PROTO=TCP '
-                f'SPT={40000 + index} DPT=445 ACTION=allowed'
+                f"SRC={source_ip} DST={hosts[index % len(hosts)]} PROTO=TCP "
+                f"SPT={40000 + index} DPT=445 ACTION=allowed"
             ),
             severity=SeverityLevel.HIGH,
             source_ip=source_ip,

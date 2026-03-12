@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, Depends, FastAPI
@@ -15,27 +16,27 @@ from cyberlens.analytics.router import router as analytics_router
 from cyberlens.common.logging import configure_logging
 from cyberlens.common.schemas import HealthResponse
 from cyberlens.config import Settings, get_settings
-from cyberlens.dependencies import get_db_session, get_redis_client, get_settings_dependency
+from cyberlens.db.session import SessionLocal
 from cyberlens.demo.generator import DemoGenerator
 from cyberlens.demo.router import router as demo_router
+from cyberlens.dependencies import get_db_session, get_redis_client, get_settings_dependency
 from cyberlens.detection.engine import DetectionEngine
-from cyberlens.detection.rule_loader import RuleLoader
 from cyberlens.detection.router import router as detection_router
+from cyberlens.detection.rule_loader import RuleLoader
 from cyberlens.incidents.router import router as incidents_router
 from cyberlens.ingestion.router import router as ingestion_router
+from cyberlens.ingestion.syslog_receiver import SyslogReceiver
 from cyberlens.mitre.router import router as mitre_router
 from cyberlens.mitre.service import get_mitre_service
 from cyberlens.settings.router import router as settings_router
 from cyberlens.settings.service import SettingsService
 from cyberlens.streaming.redis_client import build_redis_client
-from cyberlens.streaming.websocket import router as websocket_router
 from cyberlens.streaming.websocket import alert_hub
-from cyberlens.ingestion.syslog_receiver import SyslogReceiver
-from cyberlens.db.session import SessionLocal
+from cyberlens.streaming.websocket import router as websocket_router
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     configure_logging()
     settings = get_settings()
     if not settings.startup_tasks_enabled:

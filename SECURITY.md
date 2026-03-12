@@ -1,4 +1,4 @@
-<![CDATA[# Security Policy
+# Security Policy
 
 ## Scope
 
@@ -30,4 +30,3 @@ If you discover a security vulnerability in CyberLens, please report it responsi
 ## Default Credentials
 
 The `.env.example` file ships with default development credentials (e.g., `MYSQL_PASSWORD=cyberlens`). These are intended **only** for local development. If you deploy CyberLens in any networked environment, replace all default credentials immediately.
-]]>

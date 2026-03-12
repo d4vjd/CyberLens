@@ -35,7 +35,7 @@ BASELINE_MESSAGES = (
 
 
 def build_seed_dataset(days: int, intensity: int, event_count: int) -> list[DemoEventSpec]:
-    rng = random.Random(20260312 + intensity + days + event_count)
+    rng = random.Random(20260312 + intensity + days + event_count)  # nosec B311
     now = utc_now()
     start = now - timedelta(days=days)
 
@@ -65,22 +65,25 @@ def build_seed_dataset(days: int, intensity: int, event_count: int) -> list[Demo
             dest_port = 53
             protocol = "udp"
             raw_log = (
-                f'{{"src_ip":"{host_ip}","dest_ip":"{dest_ip}","query":"updates.internal","action":"allowed"}}'
+                f'{{"src_ip":"{host_ip}","dest_ip":"{dest_ip}",'
+                f'"query":"updates.internal","action":"allowed"}}'
             )
         elif event_type == "authentication":
             dest_ip = None
             dest_port = None
             protocol = None
             raw_log = (
-                f'{{"event":"vpn_login","username":"{rng.choice(BASELINE_USERS)}","source_ip":"198.51.100.{rng.randint(10, 90)}"}}'
+                f'{{"event":"vpn_login",'
+                f'"username":"{rng.choice(BASELINE_USERS)}",'
+                f'"source_ip":"198.51.100.{rng.randint(10, 90)}"}}'
             )
         else:
             dest_ip = f"10.20.{rng.randint(1, 5)}.{rng.randint(10, 240)}"
             dest_port = rng.choice((80, 443, 8080, 3306, 5432))
             protocol = "tcp"
             raw_log = (
-                f'SRC={host_ip} DST={dest_ip} PROTO={protocol.upper()} '
-                f'SPT={rng.randint(40000, 65000)} DPT={dest_port} ACTION={action}'
+                f"SRC={host_ip} DST={dest_ip} PROTO={protocol.upper()} "
+                f"SPT={rng.randint(40000, 65000)} DPT={dest_port} ACTION={action}"
             )
 
         baseline_events.append(

@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import BigInteger, Boolean, DateTime, Integer, JSON, String, Text
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from cyberlens.db.base import Base, TimestampMixin

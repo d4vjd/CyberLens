@@ -37,7 +37,9 @@ class FakeRedis:
 
 
 class AssertingEvaluator:
-    async def evaluate(self, redis: FakeRedis, event: dict[str, object], rule: DetectionRule) -> DetectionEvaluation:
+    async def evaluate(
+        self, redis: FakeRedis, event: dict[str, object], rule: DetectionRule
+    ) -> DetectionEvaluation:
         assert isinstance(redis, FakeRedis)
         assert isinstance(rule, DetectionRule)
         assert rule.rule_definition["detection"]["filter"]["event_type"] == "authentication"

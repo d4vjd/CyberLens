@@ -15,7 +15,12 @@ class FirewallParser(BaseParser):
 
     def can_parse(self, raw_log: str, source_type: str | None = None) -> bool:
         lowered = raw_log.lower()
-        return source_type == "firewall" or " src=" in lowered or " dst=" in lowered or "firewall" in lowered
+        return (
+            source_type == "firewall"
+            or " src=" in lowered
+            or " dst=" in lowered
+            or "firewall" in lowered
+        )
 
     def parse(self, raw_log: str) -> dict[str, object]:
         parsed = {

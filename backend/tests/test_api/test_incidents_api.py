@@ -5,13 +5,18 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from cyberlens.incidents.models import CaseEventType, CaseStatus, ResponseActionStatus, ResponseActionType
+from cyberlens.incidents.models import (
+    CaseEventType,
+    CaseStatus,
+    ResponseActionStatus,
+    ResponseActionType,
+)
 from cyberlens.incidents.router import get_incident_service
 from cyberlens.incidents.schemas import (
     CaseAlertSummary,
     CaseDetail,
-    CaseEvidenceDetail,
     CaseEventDetail,
+    CaseEvidenceDetail,
     CaseListResponse,
     CaseSummary,
     PlaybookRunResponse,

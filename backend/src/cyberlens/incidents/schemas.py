@@ -8,7 +8,12 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from cyberlens.incidents.models import CaseEventType, CaseStatus, ResponseActionStatus, ResponseActionType
+from cyberlens.incidents.models import (
+    CaseEventType,
+    CaseStatus,
+    ResponseActionStatus,
+    ResponseActionType,
+)
 from cyberlens.ingestion.models import SeverityLevel
 
 

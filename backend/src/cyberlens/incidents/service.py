@@ -3,8 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
-from pathlib import Path
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 from fastapi import HTTPException, UploadFile
@@ -34,8 +33,8 @@ from cyberlens.incidents.schemas import (
     CaseCommentRequest,
     CaseCreateRequest,
     CaseDetail,
-    CaseEvidenceDetail,
     CaseEventDetail,
+    CaseEvidenceDetail,
     CaseFromAlertRequest,
     CaseListResponse,
     CaseSummary,
@@ -67,20 +66,26 @@ class IncidentService:
         }
 
     async def list_cases(self) -> CaseListResponse:
-        cases = (
-            await self.session.scalars(select(Case).order_by(Case.created_at.desc()))
-        ).all()
+        cases = (await self.session.scalars(select(Case).order_by(Case.created_at.desc()))).all()
 
         items = []
         for case in cases:
             alert_count = int(
-                (await self.session.scalar(select(func.count()).select_from(CaseAlert).where(CaseAlert.case_id == case.id)))
+                (
+                    await self.session.scalar(
+                        select(func.count())
+                        .select_from(CaseAlert)
+                        .where(CaseAlert.case_id == case.id)
+                    )
+                )
                 or 0
             )
             evidence_count = int(
                 (
                     await self.session.scalar(
-                        select(func.count()).select_from(CaseEvidence).where(CaseEvidence.case_id == case.id)
+                        select(func.count())
+                        .select_from(CaseEvidence)
+                        .where(CaseEvidence.case_id == case.id)
                     )
                 )
                 or 0
@@ -136,7 +141,9 @@ class IncidentService:
         await self.session.commit()
         return await self._build_case_detail(case)
 
-    async def create_case_from_alert(self, alert_id: int, payload: CaseFromAlertRequest) -> CaseDetail:
+    async def create_case_from_alert(
+        self, alert_id: int, payload: CaseFromAlertRequest
+    ) -> CaseDetail:
         alert = await self.session.get(Alert, alert_id)
         if alert is None:
             raise HTTPException(status_code=404, detail="Alert not found")
@@ -215,7 +222,9 @@ class IncidentService:
         await self.session.commit()
         return CaseEventDetail.model_validate(event)
 
-    async def upload_evidence(self, case_uid: str, actor: str, file: UploadFile) -> EvidenceUploadResponse:
+    async def upload_evidence(
+        self, case_uid: str, actor: str, file: UploadFile
+    ) -> EvidenceUploadResponse:
         case = await self._get_case(case_uid)
         settings = get_settings()
         evidence_dir = settings.resolved_evidence_dir / case.case_uid
@@ -256,7 +265,9 @@ class IncidentService:
         ).all()
         return [ResponseActionDetail.model_validate(row) for row in rows]
 
-    async def execute_response_action(self, case_uid: str, payload: ResponseActionRequest) -> ResponseActionDetail:
+    async def execute_response_action(
+        self, case_uid: str, payload: ResponseActionRequest
+    ) -> ResponseActionDetail:
         case = await self._get_case(case_uid)
         action = ResponseAction(
             case_id=case.id,
@@ -280,11 +291,17 @@ class IncidentService:
                 }
             )
             if handler is not None
-            else {"status": "unsupported", "action": payload.action_type.value, "payload": payload.parameters}
+            else {
+                "status": "unsupported",
+                "action": payload.action_type.value,
+                "payload": payload.parameters,
+            }
         )
         action.result = result
         action.status = (
-            ResponseActionStatus.COMPLETED if result.get("status") != "failed" else ResponseActionStatus.FAILED
+            ResponseActionStatus.COMPLETED
+            if result.get("status") != "failed"
+            else ResponseActionStatus.FAILED
         )
 
         await self._add_timeline_event(
@@ -340,7 +357,9 @@ class IncidentService:
 
             event = await self._add_timeline_event(
                 case.id,
-                event_type=CaseEventType.PLAYBOOK_STEP if step_type != "evidence" else CaseEventType.EVIDENCE_ADDED,
+                event_type=CaseEventType.PLAYBOOK_STEP
+                if step_type != "evidence"
+                else CaseEventType.EVIDENCE_ADDED,
                 actor=payload.actor,
                 summary=str(step.get("summary", step_type)).strip() or step_type,
                 details={"playbook_id": playbook_id, "step": step},
@@ -357,21 +376,29 @@ class IncidentService:
 
     async def _build_case_detail(self, case: Case) -> CaseDetail:
         alerts = (
-            await self.session.execute(
-                select(Alert)
-                .join(CaseAlert, CaseAlert.alert_id == Alert.id)
-                .where(CaseAlert.case_id == case.id)
-                .order_by(Alert.created_at.desc())
+            (
+                await self.session.execute(
+                    select(Alert)
+                    .join(CaseAlert, CaseAlert.alert_id == Alert.id)
+                    .where(CaseAlert.case_id == case.id)
+                    .order_by(Alert.created_at.desc())
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         timeline = (
             await self.session.scalars(
-                select(CaseEvent).where(CaseEvent.case_id == case.id).order_by(CaseEvent.created_at.desc())
+                select(CaseEvent)
+                .where(CaseEvent.case_id == case.id)
+                .order_by(CaseEvent.created_at.desc())
             )
         ).all()
         evidence = (
             await self.session.scalars(
-                select(CaseEvidence).where(CaseEvidence.case_id == case.id).order_by(CaseEvidence.created_at.desc())
+                select(CaseEvidence)
+                .where(CaseEvidence.case_id == case.id)
+                .order_by(CaseEvidence.created_at.desc())
             )
         ).all()
         response_actions = (
@@ -407,19 +434,22 @@ class IncidentService:
             ],
             timeline=[CaseEventDetail.model_validate(entry) for entry in timeline],
             evidence=[CaseEvidenceDetail.model_validate(item) for item in evidence],
-            response_actions=[ResponseActionDetail.model_validate(item) for item in response_actions],
+            response_actions=[
+                ResponseActionDetail.model_validate(item) for item in response_actions
+            ],
         )
 
     async def _select_playbook_alert(self, case_id: int, alert_id: int | None) -> Alert | None:
         if alert_id is not None:
             return await self.session.get(Alert, alert_id)
 
-        return await self.session.scalar(
+        result: Alert | None = await self.session.scalar(
             select(Alert)
             .join(CaseAlert, CaseAlert.alert_id == Alert.id)
             .where(CaseAlert.case_id == case_id)
             .order_by(Alert.created_at.desc())
         )
+        return result
 
     async def _get_case(self, case_uid: str) -> Case:
         case = await self.session.scalar(select(Case).where(Case.case_uid == case_uid))
@@ -432,7 +462,9 @@ class IncidentService:
         if alert is None:
             raise HTTPException(status_code=404, detail=f"Alert {alert_id} not found")
 
-        existing_link = await self.session.get(CaseAlert, {"case_id": case.id, "alert_id": alert.id})
+        existing_link = await self.session.get(
+            CaseAlert, {"case_id": case.id, "alert_id": alert.id}
+        )
         if existing_link is None:
             self.session.add(CaseAlert(case_id=case.id, alert_id=alert.id, created_at=utc_now()))
 
@@ -465,7 +497,7 @@ class IncidentService:
         await self.session.flush()
         return event
 
-    def _compute_sla_due_at(self, severity: SeverityLevel):
+    def _compute_sla_due_at(self, severity: SeverityLevel) -> datetime:
         acknowledgement_window, _ = SLA_WINDOWS[severity]
         return utc_now() + acknowledgement_window
 

@@ -14,7 +14,28 @@ SCENARIO_NAME = "port_scan"
 def build_port_scan_scenario(anchor: datetime, intensity: int) -> list[DemoEventSpec]:
     source_ip = "203.0.113.17"
     dest_ip = "10.20.1.44"
-    ports = [22, 53, 80, 110, 135, 139, 143, 389, 443, 445, 587, 993, 995, 1433, 1521, 2049, 3306, 3389, 5432, 8080]
+    ports = [
+        22,
+        53,
+        80,
+        110,
+        135,
+        139,
+        143,
+        389,
+        443,
+        445,
+        587,
+        993,
+        995,
+        1433,
+        1521,
+        2049,
+        3306,
+        3389,
+        5432,
+        8080,
+    ]
     if intensity > 5:
         ports.extend([8443, 9200, 9300, 27017, 5000])
     return [
@@ -22,7 +43,10 @@ def build_port_scan_scenario(anchor: datetime, intensity: int) -> list[DemoEvent
             timestamp=anchor + timedelta(seconds=index * 6),
             event_type="network",
             source_system="netflow",
-            raw_log=f"SRC={source_ip} DST={dest_ip} PROTO=TCP SPT={40200 + index} DPT={port} FLAGS=SYN",
+            raw_log=(
+                f"SRC={source_ip} DST={dest_ip} PROTO=TCP "
+                f"SPT={40200 + index} DPT={port} FLAGS=SYN"
+            ),
             severity=SeverityLevel.MEDIUM,
             source_ip=source_ip,
             dest_ip=dest_ip,

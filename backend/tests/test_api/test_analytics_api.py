@@ -6,7 +6,12 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from cyberlens.analytics.router import get_analytics_service
-from cyberlens.analytics.schemas import AnalyticsMetric, AnalyticsOverviewResponse, AnalyticsSourcePoint, AnalyticsTrendPoint
+from cyberlens.analytics.schemas import (
+    AnalyticsMetric,
+    AnalyticsOverviewResponse,
+    AnalyticsSourcePoint,
+    AnalyticsTrendPoint,
+)
 from cyberlens.main import app
 
 

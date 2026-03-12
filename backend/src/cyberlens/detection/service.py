@@ -28,8 +28,7 @@ from cyberlens.detection.schemas import (
     RuleMutationResponse,
     RuleSummary,
 )
-from cyberlens.ingestion.models import Event
-from cyberlens.ingestion.models import SeverityLevel
+from cyberlens.ingestion.models import Event, SeverityLevel
 from cyberlens.streaming.publisher import publish_alert
 
 
@@ -69,7 +68,9 @@ class DetectionService:
 
     async def list_alerts(self, offset: int, limit: int) -> AlertListResponse:
         stmt = select(Alert).order_by(Alert.created_at.desc()).offset(offset).limit(limit)
-        items = [AlertDetail.model_validate(item) for item in (await self.session.scalars(stmt)).all()]
+        items = [
+            AlertDetail.model_validate(item) for item in (await self.session.scalars(stmt)).all()
+        ]
         total = int((await self.session.scalar(select(func.count()).select_from(Alert))) or 0)
         return AlertListResponse(items=items, total=total, offset=offset, limit=limit)
 
@@ -90,7 +91,8 @@ class DetectionService:
         rule = await self.session.scalar(
             select(DetectionRule).where(DetectionRule.rule_id == payload["id"])
         )
-        assert rule is not None
+        if rule is None:
+            raise RuntimeError("Rule should not be None after creation")
         return RuleMutationResponse(
             rule_id=rule.rule_id,
             title=rule.title,
@@ -101,7 +103,9 @@ class DetectionService:
 
     async def retire_rule(self, rule_id: str) -> RuleMutationResponse:
         loader = RuleLoader()
-        rule = await self.session.scalar(select(DetectionRule).where(DetectionRule.rule_id == rule_id))
+        rule = await self.session.scalar(
+            select(DetectionRule).where(DetectionRule.rule_id == rule_id)
+        )
         if rule is None:
             raise HTTPException(status_code=404, detail="Rule not found")
 
@@ -155,7 +159,11 @@ class DetectionService:
                 generated_alerts += 1
                 for matched in evaluation.matched_events:
                     event_id = matched.get("id")
-                    if isinstance(event_id, int) and event_id not in sample_event_ids and len(sample_event_ids) < 10:
+                    if (
+                        isinstance(event_id, int)
+                        and event_id not in sample_event_ids
+                        and len(sample_event_ids) < 10
+                    ):
                         sample_event_ids.append(event_id)
                     if len(sample_matches) < 5:
                         sample_matches.append(matched)
@@ -252,11 +260,15 @@ class DetectionService:
         }
 
     async def _get_enabled_rules(self) -> list[DetectionRule]:
-        return (
-            await self.session.scalars(
-                select(DetectionRule).where(DetectionRule.enabled.is_(True)).order_by(DetectionRule.title)
-            )
-        ).all()
+        return list(
+            (
+                await self.session.scalars(
+                    select(DetectionRule)
+                    .where(DetectionRule.enabled.is_(True))
+                    .order_by(DetectionRule.title)
+                )
+            ).all()
+        )
 
     async def _clear_rule_runtime_state(self, rule_id: str) -> None:
         keys: list[str] = []

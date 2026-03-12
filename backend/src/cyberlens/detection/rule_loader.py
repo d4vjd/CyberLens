@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException
 
 from cyberlens.config import get_settings
 from cyberlens.detection.models import DetectionRule, RuleType
@@ -37,7 +37,9 @@ class RuleLoader:
     def parse_rule_yaml(self, yaml_content: str) -> dict[str, Any]:
         payload = yaml.safe_load(yaml_content) or {}
         if not isinstance(payload, dict):
-            raise HTTPException(status_code=400, detail="Rule YAML must deserialize into an object.")
+            raise HTTPException(
+                status_code=400, detail="Rule YAML must deserialize into an object."
+            )
         return self.normalize_rule_payload(payload)
 
     def normalize_rule_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -67,7 +69,9 @@ class RuleLoader:
         clean_payload = {key: value for key, value in payload.items() if not key.startswith("_")}
         return yaml.safe_dump(clean_payload, sort_keys=False, allow_unicode=False)
 
-    def resolve_rule_file_path(self, payload: dict[str, Any], existing: DetectionRule | None = None) -> Path:
+    def resolve_rule_file_path(
+        self, payload: dict[str, Any], existing: DetectionRule | None = None
+    ) -> Path:
         existing_path = None
         if existing is not None:
             existing_path = (existing.rule_definition or {}).get("_file_path")
@@ -75,14 +79,18 @@ class RuleLoader:
             return Path(str(existing_path))
         return self.rules_dir / f"{payload['id']}.yml"
 
-    def save_rule_file(self, payload: dict[str, Any], existing: DetectionRule | None = None) -> Path:
+    def save_rule_file(
+        self, payload: dict[str, Any], existing: DetectionRule | None = None
+    ) -> Path:
         file_path = self.resolve_rule_file_path(payload, existing)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(self.dump_rule_yaml(payload), encoding="utf-8")
         return file_path
 
     def delete_rule_file(self, rule: DetectionRule) -> Path:
-        file_path = self.resolve_rule_file_path(rule.rule_definition or {"id": rule.rule_id}, existing=rule)
+        file_path = self.resolve_rule_file_path(
+            rule.rule_definition or {"id": rule.rule_id}, existing=rule
+        )
         if file_path.exists():
             file_path.unlink()
         return file_path

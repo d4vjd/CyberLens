@@ -8,7 +8,12 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cyberlens.demo.generator import DemoGenerator
-from cyberlens.demo.schemas import DemoGeneratorRequest, DemoSeedRequest, DemoSeedResponse, DemoStatusResponse
+from cyberlens.demo.schemas import (
+    DemoGeneratorRequest,
+    DemoSeedRequest,
+    DemoSeedResponse,
+    DemoStatusResponse,
+)
 from cyberlens.demo.service import DemoService
 from cyberlens.dependencies import get_db_session, get_redis_client
 from cyberlens.settings.schemas import DemoSettingsUpdate
@@ -69,9 +74,7 @@ async def stop_demo_generator(
 ) -> DemoStatusResponse:
     settings_service = SettingsService(session)
     await settings_service.ensure_defaults()
-    await settings_service.update_demo_settings(
-        DemoSettingsUpdate(enabled=False)
-    )
+    await settings_service.update_demo_settings(DemoSettingsUpdate(enabled=False))
     if runtime is not None:
         await runtime.stop()
     await settings_service.set_demo_runtime_state(generator_status="stopped")

@@ -1,4 +1,4 @@
-<![CDATA[# Contributing to CyberLens
+# Contributing to CyberLens
 
 Thank you for considering contributing to CyberLens! This document outlines the development workflow, coding standards, and pull request process.
 
@@ -104,4 +104,3 @@ chore(ci): pin CodeQL action to v3
 ## Questions?
 
 If you're unsure about an approach or want to discuss a change before implementing it, feel free to open an issue.
-]]>

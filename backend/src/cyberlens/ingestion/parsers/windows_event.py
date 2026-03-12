@@ -40,12 +40,18 @@ class WindowsEventParser(BaseParser):
         event_id = parsed.get("EventID") or parsed.get("event_id")
         return {
             "timestamp": parsed.get("TimeCreated") or parsed.get("timestamp"),
-            "event_type": "authentication" if str(event_id) in {"4624", "4625"} else "windows_event",
+            "event_type": "authentication"
+            if str(event_id) in {"4624", "4625"}
+            else "windows_event",
             "source_system": "windows",
             "severity": parsed.get("level", "medium"),
             "message": parsed.get("Message") or parsed.get("message") or raw_log,
             "username": parsed.get("TargetUserName") or parsed.get("username"),
             "hostname": parsed.get("Computer") or parsed.get("hostname"),
             "source_ip": parsed.get("IpAddress") or parsed.get("source_ip"),
-            "action": "failed" if str(event_id) == "4625" else "success" if str(event_id) == "4624" else None,
+            "action": "failed"
+            if str(event_id) == "4625"
+            else "success"
+            if str(event_id) == "4624"
+            else None,
         }
