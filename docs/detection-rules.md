@@ -145,4 +145,3 @@ Place `.yml` files in the `rules/` directory. The backend syncs all YAML rules i
 ```bash
 curl -X POST http://localhost/api/v1/detection/rules/reload
 ```
-]]>
