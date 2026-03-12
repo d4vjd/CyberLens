@@ -1,0 +1,11 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: lateral_movement_response
+title: Lateral Movement Response
+steps:
+  - type: evidence
+    summary: Capture relevant log excerpts
+  - type: action
+    action: isolate_host
+    target: "{{alert.source_ip}}"

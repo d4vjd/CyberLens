@@ -1,0 +1,23 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: brute_force_ssh
+title: SSH Brute Force Attempt
+severity: high
+type: threshold
+mitre:
+  tactic: credential-access
+  technique_id: T1110.001
+  technique_name: Brute Force - Password Guessing
+detection:
+  filter:
+    event_type: authentication
+    action: failed
+    dest_port: 22
+  threshold:
+    count: 5
+    group_by: source_ip
+    timeframe: 300
+response:
+  playbook: brute_force_response
+  auto_actions: [block_ip]

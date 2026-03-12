@@ -1,0 +1,22 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: port_scan_internal
+title: Internal network port scan
+severity: medium
+type: aggregation
+mitre:
+  tactic: discovery
+  technique_id: T1046
+  technique_name: Network Service Discovery
+detection:
+  filter:
+    event_type: network
+  aggregation:
+    distinct_field: dest_port
+    group_by: source_ip
+    min_distinct: 20
+    timeframe: 300
+response:
+  playbook: investigation_triage
+  auto_actions: []

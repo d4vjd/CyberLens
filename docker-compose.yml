@@ -1,0 +1,88 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-cyberlens}
+      MYSQL_USER: ${MYSQL_USER:-cyberlens}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-cyberlens}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u${MYSQL_USER:-cyberlens} -p${MYSQL_PASSWORD:-cyberlens}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      APP_HOST: ${APP_HOST:-0.0.0.0}
+      APP_PORT: ${APP_PORT:-8000}
+      API_PREFIX: ${API_PREFIX:-/api/v1}
+      DEBUG: ${DEBUG:-true}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-cyberlens}
+      MYSQL_USER: ${MYSQL_USER:-cyberlens}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-cyberlens}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_EVENT_STREAM: ${REDIS_EVENT_STREAM:-cyberlens:events}
+      SYSLOG_ENABLED: ${SYSLOG_ENABLED:-true}
+      SYSLOG_BIND_HOST: 0.0.0.0
+      SYSLOG_BIND_PORT: ${SYSLOG_BIND_PORT:-514}
+      RULES_PATH: /app/rules
+      MITRE_BUNDLE_PATH: /app/backend/src/cyberlens/mitre/data/enterprise-attack.json
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "514:514/tcp"
+      - "514:514/udp"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')\""]
+      interval: 20s
+      timeout: 5s
+      retries: 6
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+
+volumes:
+  mysql_data:
+  redis_data:

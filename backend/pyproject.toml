@@ -1,0 +1,60 @@
+[project]
+name = "cyberlens-backend"
+version = "0.1.0"
+description = "CyberLens SIEM backend"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "aiomysql==0.2.0",
+  "alembic==1.14.1",
+  "fastapi==0.115.6",
+  "mitreattack-python==3.0.8",
+  "pydantic-settings==2.7.1",
+  "python-multipart==0.0.20",
+  "pyyaml==6.0.2",
+  "redis[hiredis]==5.2.1",
+  "sqlalchemy==2.0.36",
+  "structlog==24.4.0",
+  "uvicorn[standard]==0.34.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "bandit==1.8.2",
+  "httpx==0.28.1",
+  "mypy==1.14.1",
+  "pytest==8.3.4",
+  "pytest-asyncio==0.25.1",
+  "pytest-cov==6.0.0",
+  "ruff==0.8.4",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+strict = true
+warn_unused_configs = true
+namespace_packages = true
+explicit_package_bases = true

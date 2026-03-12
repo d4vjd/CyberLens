@@ -1,0 +1,22 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: firewall_deny_spike
+title: Firewall deny spike
+severity: low
+type: threshold
+mitre:
+  tactic: reconnaissance
+  technique_id: T1595
+  technique_name: Active Scanning
+detection:
+  filter:
+    event_type: firewall
+    action: denied
+  threshold:
+    count: 25
+    group_by: source_ip
+    timeframe: 120
+response:
+  playbook: investigation_triage
+  auto_actions: []

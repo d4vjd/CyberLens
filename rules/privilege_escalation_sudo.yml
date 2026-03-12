@@ -1,0 +1,20 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: privilege_escalation_sudo
+title: Suspicious sudo escalation
+severity: medium
+type: pattern
+mitre:
+  tactic: privilege-escalation
+  technique_id: T1548
+  technique_name: Abuse Elevation Control Mechanism
+detection:
+  filter:
+    event_type: process
+  pattern:
+    field: message
+    contains: "sudo"
+response:
+  playbook: privileged_access_review
+  auto_actions: []

@@ -1,0 +1,23 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: windows_logon_failures
+title: Windows logon failure burst
+severity: medium
+type: threshold
+mitre:
+  tactic: credential-access
+  technique_id: T1110
+  technique_name: Brute Force
+detection:
+  filter:
+    event_type: authentication
+    source_system: windows
+    action: failed
+  threshold:
+    count: 8
+    group_by: source_ip
+    timeframe: 300
+response:
+  playbook: brute_force_response
+  auto_actions: []

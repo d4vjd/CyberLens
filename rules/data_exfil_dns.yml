@@ -1,0 +1,20 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: data_exfil_dns
+title: Suspicious DNS exfiltration
+severity: critical
+type: pattern
+mitre:
+  tactic: exfiltration
+  technique_id: T1048.003
+  technique_name: Exfiltration Over Unencrypted Non-C2 Protocol
+detection:
+  filter:
+    event_type: dns
+  pattern:
+    field: message
+    contains: "TXT"
+response:
+  playbook: data_exfiltration_response
+  auto_actions: [block_ip]

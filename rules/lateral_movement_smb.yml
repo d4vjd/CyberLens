@@ -1,0 +1,22 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: lateral_movement_smb
+title: Lateral movement over SMB
+severity: high
+type: threshold
+mitre:
+  tactic: lateral-movement
+  technique_id: T1021.002
+  technique_name: SMB/Windows Admin Shares
+detection:
+  filter:
+    event_type: network
+    dest_port: 445
+  threshold:
+    count: 10
+    group_by: source_ip
+    timeframe: 600
+response:
+  playbook: lateral_movement_response
+  auto_actions: [isolate_host]

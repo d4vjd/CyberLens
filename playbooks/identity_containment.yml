@@ -1,0 +1,11 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: identity_containment
+title: Identity Containment
+steps:
+  - type: notify
+    summary: Notify IAM operations
+  - type: action
+    action: disable_account
+    target: "{{alert.assigned_to}}"

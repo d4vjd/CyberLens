@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="cyberlensGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#4fd1c5" />
+      <stop offset="100%" stop-color="#ff8f3f" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="#0b1324" />
+  <path
+    d="M19 19h26v8H27v10h14v8H19z"
+    fill="url(#cyberlensGradient)"
+  />
+  <circle cx="46" cy="45" r="7" fill="none" stroke="url(#cyberlensGradient)" stroke-width="4" />
+  <path d="M50 50l7 7" stroke="#ff8f3f" stroke-linecap="round" stroke-width="4" />
+</svg>

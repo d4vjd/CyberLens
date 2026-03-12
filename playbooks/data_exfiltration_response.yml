@@ -1,0 +1,11 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: data_exfiltration_response
+title: Data Exfiltration Response
+steps:
+  - type: notify
+    summary: Notify incident commander
+  - type: action
+    action: block_ip
+    target: "{{alert.source_ip}}"

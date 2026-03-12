@@ -1,0 +1,25 @@
+# CyberLens SIEM — Copyright (c) 2026 David Pupăză
+# Licensed under the Hippocratic License 3.0. See LICENSE file for details.
+
+id: vpn_impossible_travel
+title: VPN impossible travel
+severity: high
+type: sequence
+mitre:
+  tactic: credential-access
+  technique_id: T1078
+  technique_name: Valid Accounts
+detection:
+  steps:
+    - event_type: authentication
+      source_system: vpn
+      action: success
+    - event_type: authentication
+      source_system: vpn
+      action: success
+  sequence:
+    group_by: username
+    timeframe: 1800
+response:
+  playbook: identity_containment
+  auto_actions: [disable_account]
