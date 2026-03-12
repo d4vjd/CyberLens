@@ -4,27 +4,27 @@ CyberLens is structured as a FastAPI backend with MySQL persistence, Redis-backe
 
 ## Service Topology
 
-```
-┌──────────────────────────────────────────────────────┐
-│                    Docker Compose                     │
-│                                                      │
-│  ┌─────────┐    ┌───────────┐    ┌───────────────┐   │
-│  │  nginx   │───▶│ frontend  │    │  syslog src   │   │
-│  │  :80     │    │ (static)  │    │  (external)   │   │
-│  │         │    └───────────┘    └──────┬────────┘   │
-│  │         │                           │             │
-│  │  /api/* │    ┌───────────┐          │ TCP/UDP     │
-│  │─────────┼───▶│  backend  │◀─────────┘ :514       │
-│  └─────────┘    │  :8000    │                        │
-│                 └─────┬─────┘                        │
-│                   │       │                          │
-│            ┌──────┘       └──────┐                   │
-│            ▼                     ▼                   │
-│      ┌───────────┐        ┌───────────┐              │
-│      │   MySQL   │        │   Redis   │              │
-│      │   8.4     │        │   7.4     │              │
-│      └───────────┘        └───────────┘              │
-└──────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    classDef container fill:#1A1B26,stroke:#7AA2F7,stroke-width:2px,color:#C0CAF5;
+    classDef database fill:#1A1B26,stroke:#9ECE6A,stroke-width:2px,color:#C0CAF5;
+    classDef external fill:#1A1B26,stroke:#BB9AF7,stroke-width:2px,color:#C0CAF5,stroke-dasharray: 5 5;
+
+    subgraph Docker Compose
+        NGINX["nginx<br/>:80"]:::container
+        FRONTEND["frontend<br/>(static)"]:::container
+        BACKEND["backend<br/>:8000"]:::container
+        MYSQL[("MySQL<br/>8.4")]:::database
+        REDIS[("Redis<br/>7.4")]:::database
+        
+        NGINX -->|/*| FRONTEND
+        NGINX -->|/api/*| BACKEND
+        BACKEND --> MYSQL
+        BACKEND --> REDIS
+    end
+
+    SYSLOG["syslog src<br/>(external)"]:::external
+    SYSLOG -->|TCP/UDP :514| BACKEND
 ```
 
 - **nginx** — Reverse proxy on port `80`. Routes `/api/*` to the backend and all other paths to the frontend.

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 180" role="img" aria-labelledby="title desc">
+  <title id="title">CyberLens lockup for dark backgrounds</title>
+  <desc id="desc">CyberLens wordmark with the product subtitle for dark surfaces.</desc>
+  <defs>
+    <linearGradient id="panel" x1="16" x2="96" y1="12" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#15161d" />
+      <stop offset="1" stop-color="#0b0d12" />
+    </linearGradient>
+    <radialGradient id="halo" cx="0" cy="0" r="1" gradientTransform="translate(54 54) rotate(90) scale(42)">
+      <stop offset="0" stop-color="#3dd8c5" stop-opacity="0.32" />
+      <stop offset="1" stop-color="#3dd8c5" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="ring" x1="24" x2="86" y1="22" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#59ead7" />
+      <stop offset="0.6" stop-color="#3dd8c5" />
+      <stop offset="1" stop-color="#f97316" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(12 38)">
+    <rect width="104" height="104" rx="28" fill="#07080b" />
+    <rect x="5" y="5" width="94" height="94" rx="23" fill="url(#panel)" stroke="#262b33" />
+    <circle cx="42" cy="42" r="42" fill="url(#halo)" />
+    <path d="M30 18H21c-3.314 0-6 2.686-6 6v9" fill="none" stroke="#3dd8c5" stroke-linecap="round" stroke-width="5" />
+    <path d="M15 64v9c0 3.314 2.686 6 6 6h9" fill="none" stroke="#3dd8c5" stroke-linecap="round" stroke-width="5" />
+    <path d="M64 18h9c3.314 0 6 2.686 6 6v9" fill="none" stroke="#3dd8c5" stroke-linecap="round" stroke-width="5" />
+    <path d="M79 64v9c0 3.314-2.686 6-6 6h-9" fill="none" stroke="#3dd8c5" stroke-linecap="round" stroke-width="5" />
+    <circle cx="42" cy="42" r="20" fill="#0f1117" stroke="url(#ring)" stroke-width="6" />
+    <circle cx="42" cy="42" r="7" fill="#3dd8c5" />
+    <path d="M57 57l18 18" fill="none" stroke="#f97316" stroke-linecap="round" stroke-width="7" />
+    <circle cx="83" cy="20" r="4" fill="#f97316" />
+  </g>
+  <text x="142" y="77" fill="#ececef" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="54" font-weight="700" letter-spacing="-1.8">
+    CyberLens
+  </text>
+  <text x="143" y="109" fill="#3dd8c5" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="3">
+    PORTFOLIO SIEM
+  </text>
+  <text x="143" y="137" fill="#9797a2" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="22" font-weight="500">
+    Security intelligence platform for modern analyst workflows
+  </text>
+</svg>

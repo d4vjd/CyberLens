@@ -124,6 +124,8 @@ The generator continuously produces events, alerts, and cases while running.
 
 Toggle from the **Settings** page. Synthetic mode renders a dense local dataset inside the frontend without any backend mutations — ideal for capturing portfolio screenshots at any time.
 
+<img src="assets/settings.png" alt="Settings Mode Toggle" width="100%" />
+
 ## Useful Make Targets
 
 | Target | Description |

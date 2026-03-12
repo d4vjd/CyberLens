@@ -95,7 +95,12 @@ export function AppLayout() {
     <div className="app-shell" data-theme={theme}>
       <aside className="sidebar">
         <div className="brand-mark">
-          <span className="brand-mark__chip">CL</span>
+          <img
+            alt=""
+            aria-hidden="true"
+            className="brand-mark__logo"
+            src="/branding/cyberlens-mark.svg"
+          />
           <div>
             <h1>CyberLens</h1>
             <p className="brand-mark__version">Security Intelligence Platform</p>

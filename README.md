@@ -1,3 +1,11 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="frontend/public/branding/cyberlens-lockup-night.svg">
+    <source media="(prefers-color-scheme: light)" srcset="frontend/public/branding/cyberlens-lockup-dawn.svg">
+    <img alt="CyberLens Logo" src="frontend/public/branding/cyberlens-lockup-night.svg" width="400">
+  </picture>
+</p>
+
 # CyberLens SIEM
 
 [![CI](https://github.com/d4vjd/CyberLens/actions/workflows/ci.yml/badge.svg)](https://github.com/d4vjd/CyberLens/actions/workflows/ci.yml)
@@ -8,21 +16,35 @@ A portfolio-grade Security Information and Event Management (SIEM) application b
 
 CyberLens runs as a single Docker Compose stack (FastAPI · React · MySQL · Redis · nginx) and ships with a seeded attack campaign plus optional live synthetic generation for portfolio screenshots.
 
+<br />
+<p align="center">
+  <img src="docs/assets/overview.png" alt="CyberLens Overview Dashboard" width="100%" />
+</p>
+<br />
+
 ---
 
 ## Table of Contents
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Demo Workflow](#demo-workflow)
-- [Development](#development)
-- [Available Make Targets](#available-make-targets)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
+- [CyberLens SIEM](#cyberlens-siem)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Gallery](#gallery)
+  - [Tech Stack](#tech-stack)
+  - [Project Structure](#project-structure)
+  - [Prerequisites](#prerequisites)
+  - [Quick Start](#quick-start)
+  - [Demo Workflow](#demo-workflow)
+  - [Development](#development)
+  - [Available Make Targets](#available-make-targets)
+  - [Documentation](#documentation)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [App Showcase](#app-showcase)
+    - [Detailed Investigations](#detailed-investigations)
+    - [Incident Response](#incident-response)
+    - [Rule Authoring \& Detection Strategies](#rule-authoring--detection-strategies)
+    - [High-level Overview](#high-level-overview)
 
 ---
 
@@ -38,6 +60,27 @@ CyberLens runs as a single Docker Compose stack (FastAPI · React · MySQL · Re
 - **Demo Mode** — Seeded showcase telemetry and optional background synthetic event generation for dense, screenshot-ready views.
 - **Dashboard UI** — React + TypeScript frontend with 8 routed pages and a custom dark visual system, including a synthetic mode toggle.
 - **CI/CD** — GitHub Actions workflows for lint, test, security scan (Bandit + CodeQL), and frontend build verification.
+
+---
+
+## Gallery
+
+<details>
+<summary><strong>View Application Screenshots</strong></summary>
+
+<br />
+
+| Events Exploration | Alerts & Detection |
+| :---: | :---: |
+| <img src="docs/assets/events.png" alt="Events" /> | <img src="docs/assets/alerts.png" alt="Alerts" /> |
+| **MITRE ATT&CK Mapping** | **Incident Response (Cases)** |
+| <img src="docs/assets/mitre.png" alt="MITRE Mapping" /> | <img src="docs/assets/cases.png" alt="Cases" /> |
+| **Rule Authoring** | **Analytics & Trends** |
+| <img src="docs/assets/rules.png" alt="Rules" /> | <img src="docs/assets/analytics.png" alt="Analytics" /> |
+| **System Settings** | |
+| <img src="docs/assets/settings.png" alt="Settings" /> | |
+
+</details>
 
 ---
 
@@ -203,3 +246,31 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development flow, coding standards, a
 ## License
 
 This project is licensed under the [Hippocratic License 3.0](LICENSE).
+
+---
+
+## App Showcase
+
+Take a closer look at the CyberLens interface in action:
+
+### Detailed Investigations
+The events explorer allowing complex querying and deep-dive investigations:
+<img src="docs/assets/events.png" alt="Events Explorer" width="100%" />
+
+<br/>
+
+### Incident Response
+A seamless workflow for analysts to review alerts, handle cases, and document findings:
+<img src="docs/assets/cases.png" alt="Incident Response Cases" width="100%" />
+
+<br/>
+
+### Rule Authoring & Detection Strategies
+Live edit yaml detection rules, perform syntax checks, and test backwards on historical data:
+<img src="docs/assets/rules.png" alt="Rules Editor" width="100%" />
+
+<br/>
+
+### High-level Overview
+Visualize your security posture and track activity trends at a glance:
+<img src="docs/assets/overview.png" alt="Analytics Overview" width="100%" />

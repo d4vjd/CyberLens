@@ -128,7 +128,15 @@ CyberLens ships with 9 detection rules covering a range of ATT&CK techniques:
 
 ### Via the Dashboard
 
-The **Rules** page provides a visual editor for browsing, creating, and testing detection rules.
+The **Rules** page provides a visual editor for browsing, creating, and testing detection rules against historical telemetry.
+
+<img src="assets/rules.png" alt="Rules Editor" width="100%" />
+
+### MITRE ATT&CK Matrix
+
+The **MITRE** page provides an interactive view of the MITRE ATT&CK matrix based on active detection rules and generated alerts.
+
+<img src="assets/mitre.png" alt="MITRE ATT&CK Mapping" width="100%" />
 
 ### On Disk
 

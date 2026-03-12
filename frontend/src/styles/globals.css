@@ -191,20 +191,12 @@ button {
   letter-spacing: -0.025em;
 }
 
-.brand-mark__chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, #3dd8c5 0%, #2ab8a7 100%);
-  color: #09090b;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
+.brand-mark__logo {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.85rem;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(61, 216, 197, 0.25);
+  box-shadow: 0 10px 24px rgba(61, 216, 197, 0.12);
 }
 
 .brand-mark__version {

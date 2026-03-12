@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">CyberLens social card</title>
+  <desc id="desc">A branded CyberLens banner with a dark observability interface and core telemetry metrics.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1200" y1="0" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#06070a" />
+      <stop offset="0.55" stop-color="#090b10" />
+      <stop offset="1" stop-color="#0d1117" />
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientTransform="translate(285 210) rotate(90) scale(240 300)">
+      <stop offset="0" stop-color="#3dd8c5" stop-opacity="0.28" />
+      <stop offset="1" stop-color="#3dd8c5" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientTransform="translate(940 170) rotate(90) scale(180 240)">
+      <stop offset="0" stop-color="#f97316" stop-opacity="0.14" />
+      <stop offset="1" stop-color="#f97316" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="cardStroke" x1="674" x2="1120" y1="110" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#313643" />
+      <stop offset="1" stop-color="#202532" />
+    </linearGradient>
+    <linearGradient id="chart" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#59ead7" />
+      <stop offset="1" stop-color="#3dd8c5" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" rx="36" fill="url(#bg)" />
+  <rect x="1" y="1" width="1198" height="628" rx="35" fill="none" stroke="#1b2029" stroke-width="2" />
+  <circle cx="285" cy="210" r="250" fill="url(#glowA)" />
+  <circle cx="940" cy="170" r="220" fill="url(#glowB)" />
+  <g opacity="0.24" stroke="#191d25">
+    <path d="M0 120h1200" />
+    <path d="M0 220h1200" />
+    <path d="M0 320h1200" />
+    <path d="M0 420h1200" />
+    <path d="M0 520h1200" />
+    <path d="M180 0v630" />
+    <path d="M320 0v630" />
+    <path d="M460 0v630" />
+    <path d="M600 0v630" />
+    <path d="M740 0v630" />
+    <path d="M880 0v630" />
+    <path d="M1020 0v630" />
+  </g>
+  <g transform="translate(74 82)">
+    <rect width="116" height="116" rx="32" fill="#07080b" />
+    <rect x="6" y="6" width="104" height="104" rx="26" fill="#13161e" stroke="#262b33" />
+    <circle cx="46" cy="46" r="48" fill="#3dd8c5" fill-opacity="0.14" />
+    <path d="M34 20H24c-3.314 0-6 2.686-6 6v10" fill="none" stroke="#3dd8c5" stroke-linecap="round" stroke-width="6" />
+    <path d="M18 68v10c0 3.314 2.686 6 6 6h10" fill="none" stroke="#3dd8c5" stroke-linecap="round" stroke-width="6" />
+    <path d="M68 20h10c3.314 0 6 2.686 6 6v10" fill="none" stroke="#3dd8c5" stroke-linecap="round" stroke-width="6" />
+    <path d="M84 68v10c0 3.314-2.686 6-6 6H68" fill="none" stroke="#3dd8c5" stroke-linecap="round" stroke-width="6" />
+    <circle cx="46" cy="46" r="22" fill="#0f1117" stroke="url(#chart)" stroke-width="7" />
+    <circle cx="46" cy="46" r="7" fill="#3dd8c5" />
+    <path d="M63 63l20 20" fill="none" stroke="#f97316" stroke-linecap="round" stroke-width="8" />
+    <circle cx="88" cy="22" r="4.5" fill="#f97316" />
+  </g>
+  <text x="74" y="251" fill="#3dd8c5" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="4">
+    PORTFOLIO SIEM
+  </text>
+  <text x="74" y="322" fill="#ececef" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="72" font-weight="700" letter-spacing="-2.4">
+    CyberLens
+  </text>
+  <text x="74" y="372" fill="#a0a0ab" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="28" font-weight="500">
+    Synthetic-ready security intelligence workspace for modern SOC workflows.
+  </text>
+  <text x="74" y="430" fill="#8b91a0" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="22">
+    Events, alerts, cases, ATT&amp;CK coverage, and portfolio screenshots from one analyst console.
+  </text>
+  <g transform="translate(74 484)">
+    <rect width="172" height="48" rx="24" fill="#0d201d" stroke="#1d5f56" />
+    <circle cx="22" cy="24" r="6" fill="#22c55e" />
+    <text x="38" y="31" fill="#59ead7" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="21" font-weight="700">
+      Synthetic dataset enabled
+    </text>
+  </g>
+  <g transform="translate(690 82)">
+    <rect width="420" height="460" rx="28" fill="#12141b" stroke="url(#cardStroke)" stroke-width="2" />
+    <text x="28" y="40" fill="#ececef" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="22" font-weight="700">
+      Analyst Console
+    </text>
+    <text x="28" y="68" fill="#7f8694" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="16">
+      SOC-wide telemetry pulse
+    </text>
+    <g transform="translate(28 96)">
+      <rect width="114" height="92" rx="18" fill="#171920" stroke="#252936" />
+      <text x="18" y="24" fill="#6c7282" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="2">
+        EVENTS INDEXED
+      </text>
+      <text x="18" y="58" fill="#ececef" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="30" font-weight="700">
+        44,397
+      </text>
+      <text x="18" y="78" fill="#3dd8c5" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="14" font-weight="700">
+        +14% vs baseline
+      </text>
+    </g>
+    <g transform="translate(154 96)">
+      <rect width="114" height="92" rx="18" fill="#171920" stroke="#252936" />
+      <text x="18" y="24" fill="#6c7282" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="2">
+        OPEN ALERTS
+      </text>
+      <text x="18" y="58" fill="#ececef" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="30" font-weight="700">
+        23
+      </text>
+      <text x="18" y="78" fill="#f97316" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="14" font-weight="700">
+        2 awaiting triage
+      </text>
+    </g>
+    <g transform="translate(280 96)">
+      <rect width="114" height="92" rx="18" fill="#171920" stroke="#252936" />
+      <text x="18" y="24" fill="#6c7282" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="2">
+        ACTIVE CASES
+      </text>
+      <text x="18" y="58" fill="#ececef" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="30" font-weight="700">
+        3
+      </text>
+      <text x="18" y="78" fill="#ef4444" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="14" font-weight="700">
+        2 priority 1
+      </text>
+    </g>
+    <g transform="translate(28 216)">
+      <rect width="366" height="154" rx="20" fill="#14171f" stroke="#252936" />
+      <text x="20" y="28" fill="#ececef" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="20" font-weight="700">
+        Event rate
+      </text>
+      <text x="20" y="52" fill="#7f8694" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="14">
+        Events and alert pressure by time bucket
+      </text>
+      <g opacity="0.35" stroke="#2a2f3b">
+        <path d="M20 84h326" />
+        <path d="M20 112h326" />
+        <path d="M20 140h326" />
+      </g>
+      <path d="M20 141L90 126L172 84L238 48L312 30L346 44" fill="none" stroke="url(#chart)" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+      <path d="M20 141L90 126L172 84L238 48L312 30L346 44V154H20Z" fill="#3dd8c5" fill-opacity="0.08" />
+      <path d="M20 154H346" stroke="#f97316" stroke-width="3" />
+    </g>
+    <g transform="translate(28 388)">
+      <rect width="174" height="48" rx="24" fill="#0d201d" stroke="#1d5f56" />
+      <circle cx="20" cy="24" r="6" fill="#22c55e" />
+      <text x="34" y="31" fill="#59ead7" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="18" font-weight="700">
+        Synthetic feed
+      </text>
+    </g>
+    <g transform="translate(220 388)">
+      <rect width="132" height="48" rx="24" fill="#181b23" stroke="#2a303c" />
+      <circle cx="20" cy="24" r="5" fill="#71717a" />
+      <text x="34" y="31" fill="#b2b7c4" font-family="Inter, SF Pro Display, Arial, sans-serif" font-size="18" font-weight="700">
+        18 indexed
+      </text>
+    </g>
+  </g>
+</svg>
