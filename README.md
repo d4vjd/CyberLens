@@ -12,9 +12,13 @@
 [![CodeQL](https://github.com/d4vjd/CyberLens/actions/workflows/codeql.yml/badge.svg)](https://github.com/d4vjd/CyberLens/actions/workflows/codeql.yml)
 [![License: Hippocratic 3.0](https://img.shields.io/badge/License-Hippocratic_3.0-lightgrey.svg)](LICENSE)
 
-A portfolio-grade Security Information and Event Management (SIEM) application built for professional SOC workflows: log intake, real-time detection, MITRE ATT&CK coverage mapping, incident response, and demo-friendly showcase data.
+> Hi, I'm David ([@d4vjd](https://github.com/d4vjd))! 👋 I built CyberLens to showcase my capabilities as a software engineer and my deep passion for cybersecurity. Building an end-to-end SIEM from scratch allowed me to demonstrate modern system design, real-time data streaming architectures, and how to create intuitive, analyst-first user interfaces. Thanks for stopping by!
 
-CyberLens runs as a single Docker Compose stack (FastAPI · React · MySQL · Redis · nginx) and ships with a seeded attack campaign plus optional live synthetic generation for portfolio screenshots.
+A portfolio-grade Security Information and Event Management (SIEM) application built for professional SOC workflows: log intake, real-time detection, MITRE ATT&CK coverage mapping, incident response, and live operational telemetry.
+
+CyberLens runs as a single Docker Compose stack (FastAPI · React · MySQL · Redis · nginx). Live mode now includes a baseline telemetry emitter that sends genuine health probes, service heartbeats, and routine network flows through the real ingestion pipeline before external log sources are connected.
+
+The screenshots in this repository are captured from the widescreen desktop layout with synthetic mode enabled so every workflow stays fully populated.
 
 <br />
 <p align="center">
@@ -34,7 +38,7 @@ CyberLens runs as a single Docker Compose stack (FastAPI · React · MySQL · Re
   - [Project Structure](#project-structure)
   - [Prerequisites](#prerequisites)
   - [Quick Start](#quick-start)
-  - [Demo Workflow](#demo-workflow)
+  - [Live and Scenario Workflow](#live-and-scenario-workflow)
   - [Development](#development)
   - [Available Make Targets](#available-make-targets)
   - [Documentation](#documentation)
@@ -56,14 +60,17 @@ CyberLens runs as a single Docker Compose stack (FastAPI · React · MySQL · Re
 - **MITRE ATT&CK Mapping** — Bundled ATT&CK subset with API-driven matrix coverage derived from live rules and alerts.
 - **Rule Authoring** — Live rule editing with YAML save, catalog reload, and historical test-against-telemetry support.
 - **Incident Response** — Case creation, alert escalation, comments, playbook execution, evidence uploads, and simulated response actions.
-- **Analytics** — Overview API powering live trend and top-source dashboards.
-- **Demo Mode** — Seeded showcase telemetry and optional background synthetic event generation for dense, screenshot-ready views.
-- **Dashboard UI** — React + TypeScript frontend with 8 routed pages and a custom dark visual system, including a synthetic mode toggle.
+- **Operational Baseline Telemetry** — Live mode emits real MySQL and Redis health checks, service heartbeats, and normal service-to-service flows through the same ingestion path used for external telemetry.
+- **Analytics** — Operational dashboards for throughput, severity distribution, event-type mix, top sources, and baseline pulse visibility.
+- **Scenario Tooling** — Seeded scenarios and synthetic generation remain available for walkthroughs, but are separated from the primary live workflow.
+- **Dashboard UI** — React + TypeScript frontend with a professional SOC-focused shell, compact theme toggle, live/synthetic mode separation, and data-clearing controls.
 - **CI/CD** — GitHub Actions workflows for lint, test, security scan (Bandit + CodeQL), and frontend build verification.
 
 ---
 
 ## Gallery
+
+All gallery captures below use the widescreen desktop viewport and the synthetic walkthrough dataset.
 
 <details>
 <summary><strong>View Application Screenshots</strong></summary>
@@ -107,7 +114,7 @@ siem/
 │   │   ├── analytics/        # Trend and overview analytics
 │   │   ├── common/           # Shared utilities
 │   │   ├── db/               # SQLAlchemy models and sessions
-│   │   ├── demo/             # Seed and synthetic generator
+│   │   ├── demo/             # Scenario seeding, synthetic generator, and data clearing
 │   │   ├── detection/        # Rule engine and evaluators
 │   │   ├── incidents/        # Case management and playbooks
 │   │   ├── ingestion/        # Log parsers and ingest endpoints
@@ -166,7 +173,7 @@ open http://localhost
 # 5. Verify the API health endpoint
 curl http://localhost/api/v1/health
 
-# 6. (Optional) Seed demo data for populated dashboards
+# 6. (Optional) Seed scenario data for a walkthrough
 make seed
 ```
 
@@ -180,14 +187,20 @@ The stack exposes:
 
 ---
 
-## Demo Workflow
+## Live and Scenario Workflow
 
-CyberLens ships with two complementary demo modes for capturing portfolio screenshots:
+CyberLens supports both live operations and secondary scenario tooling:
 
-1. **Live mode** — Use the Settings page or `make seed` to inject a realistic attack campaign into the live datastore. Dashboards pull from the real API.
-2. **Synthetic mode** — Toggle from the UI to display a dense local showcase dataset without touching the backend state. Useful for instant, repeatable screenshots.
+1. **Live mode** — Default operating mode. The dashboard reads from the real API, and the baseline emitter keeps the pipeline active with operational health probes, service heartbeats, and routine network flows.
+2. **Scenario seeding** — Use the Settings page or `make seed` to inject a realistic attack campaign into the live datastore for validation or walkthroughs.
+3. **Synthetic mode** — Optional frontend-only dataset for presentations and repeatable walkthroughs. It does not mutate backend state.
 
-You can also start a background demo generator from Settings to keep live alerts, cases, and analytics moving continuously.
+You can also start a background synthetic generator from Settings when you explicitly need continuous scenario traffic.
+
+The Settings page also includes data-clearing controls:
+
+- `Clear seeded data` removes only seeded scenario events, alerts, and cases.
+- `Clear live data` removes indexed events, alerts, cases, and linked investigation records so the live baseline can repopulate the datastore cleanly.
 
 ---
 
@@ -206,7 +219,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 | nginx | `8080` | Proxies to both services |
 | Syslog | `5514` | Avoids privileged port 514 on the host |
 
-See [docs/development.md](docs/development.md) for full details including syslog ingestion and demo data setup.
+See [docs/development.md](docs/development.md) for full details including syslog ingestion, baseline telemetry, and scenario data setup.
 
 ---
 
@@ -218,7 +231,7 @@ See [docs/development.md](docs/development.md) for full details including syslog
 | `make down` | Stop all services and remove orphan containers |
 | `make build` | Build container images without starting |
 | `make migrate` | Run Alembic migrations inside the backend container |
-| `make seed` | Seed demo data via the REST API |
+| `make seed` | Seed scenario data via the REST API |
 | `make test` | Run backend pytest suite with coverage |
 | `make lint` | Run Ruff, mypy, and Bandit on the backend; build-check the frontend |
 | `make logs` | Tail live logs from all services |
@@ -232,7 +245,7 @@ Extended documentation is located in the [`docs/`](docs/) directory:
 - [Architecture](docs/architecture.md) — Runtime flow, service topology, and startup sequence
 - [API Reference](docs/api-reference.md) — Complete endpoint listing with ingestion, detection, and incident response notes
 - [Detection Rules](docs/detection-rules.md) — YAML rule schema, supported rule types, and examples
-- [Development](docs/development.md) — Local development setup, syslog ingestion, and demo data
+- [Development](docs/development.md) — Local development setup, syslog ingestion, baseline telemetry, and scenario data
 - [Deployment](docs/deployment.md) — Production and development deployment guidance
 
 ---

@@ -26,7 +26,7 @@ class NetflowParser(BaseParser):
         }
         return {
             "timestamp": parsed.get("timestamp"),
-            "event_type": "network",
+            "event_type": parsed.get("event_type") or "network",
             "source_system": parsed.get("exporter") or "netflow",
             "severity": "low",
             "source_ip": parsed.get("src_ip"),
@@ -34,6 +34,6 @@ class NetflowParser(BaseParser):
             "source_port": parsed.get("src_port"),
             "dest_port": parsed.get("dst_port"),
             "protocol": parsed.get("protocol"),
-            "message": raw_log,
+            "message": parsed.get("message") or raw_log,
             "bytes": parsed.get("bytes"),
         }

@@ -8,6 +8,7 @@ Thumbs.db
 # Editor / IDE
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 
@@ -31,6 +32,8 @@ backend/src/*.egg-info/
 # Frontend
 frontend/node_modules/
 frontend/dist/
+frontend/vite.config.js
+frontend/vite.config.d.ts
 
 # Alembic
 alembic/versions/__pycache__/

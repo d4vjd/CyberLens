@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from cyberlens.demo.generator import DemoGenerator
 from cyberlens.demo.schemas import (
+    DataClearResponse,
     DemoGeneratorRequest,
     DemoSeedRequest,
     DemoSeedResponse,
@@ -46,6 +47,26 @@ async def seed_demo_data(
     service: DemoService = Depends(get_demo_service),
 ) -> DemoSeedResponse:
     return await service.seed_dataset(payload)
+
+
+@router.delete("/seeded-data", response_model=DataClearResponse)
+async def clear_seeded_demo_data(
+    service: DemoService = Depends(get_demo_service),
+    runtime: DemoGenerator | None = Depends(get_demo_generator),
+) -> DataClearResponse:
+    if runtime is not None:
+        await runtime.stop()
+    return await service.clear_seeded_demo_data()
+
+
+@router.delete("/live-data", response_model=DataClearResponse)
+async def clear_live_data(
+    service: DemoService = Depends(get_demo_service),
+    runtime: DemoGenerator | None = Depends(get_demo_generator),
+) -> DataClearResponse:
+    if runtime is not None:
+        await runtime.stop()
+    return await service.clear_live_data()
 
 
 @router.post("/generator/start", response_model=DemoStatusResponse)

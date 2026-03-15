@@ -90,9 +90,25 @@ echo "<34>1 2026-03-12T10:00:00Z firewall sshd 1234 - Failed password for root f
   | nc -u localhost 5514
 ```
 
-## Demo Data
+## Live Baseline Telemetry
 
-CyberLens provides three complementary demo data mechanisms:
+When the backend runs in live mode, it can emit a small operational baseline through the real ingestion pipeline. This keeps the console functional before you connect external log sources.
+
+The baseline currently emits:
+
+- MySQL and Redis health probes
+- Core service heartbeats
+- Routine internal network flows
+
+Check runtime status at:
+
+```bash
+curl -s http://localhost/api/v1/ingest/baseline/status
+```
+
+## Scenario and Synthetic Data
+
+CyberLens provides three secondary scenario mechanisms for walkthroughs and validation:
 
 ### 1. API Seeding
 
@@ -122,9 +138,24 @@ The generator continuously produces events, alerts, and cases while running.
 
 ### 3. Frontend Synthetic Mode
 
-Toggle from the **Settings** page. Synthetic mode renders a dense local dataset inside the frontend without any backend mutations — ideal for capturing portfolio screenshots at any time.
+Toggle from the **Settings** page. Synthetic mode renders a dense local dataset inside the frontend without any backend mutations.
+Repository screenshots are captured from this mode using the widescreen desktop layout so the UI stays fully populated.
 
 <img src="assets/settings.png" alt="Settings Mode Toggle" width="100%" />
+
+## Data Clearing
+
+The Settings page exposes two maintenance actions:
+
+- `Clear seeded data` removes only seeded scenario records from the live datastore.
+- `Clear live data` removes indexed events, alerts, cases, and linked investigation records so the live baseline can repopulate the environment from a clean slate.
+
+Equivalent API calls:
+
+```bash
+curl -X DELETE http://localhost/api/v1/demo/seeded-data
+curl -X DELETE http://localhost/api/v1/demo/live-data
+```
 
 ## Useful Make Targets
 
@@ -134,7 +165,7 @@ Toggle from the **Settings** page. Synthetic mode renders a dense local dataset 
 | `make down` | Stop services and remove orphans |
 | `make build` | Build images without starting |
 | `make migrate` | Run Alembic migrations |
-| `make seed` | Seed demo data via REST API |
+| `make seed` | Seed scenario data via REST API |
 | `make test` | Run backend tests with coverage |
 | `make lint` | Full lint pipeline |
 | `make logs` | Tail live logs from all services |

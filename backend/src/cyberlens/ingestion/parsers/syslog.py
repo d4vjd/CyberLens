@@ -51,7 +51,8 @@ class SyslogParser(BaseParser):
                     "source_system": payload["appname"],
                     "message": message,
                     "priority": int(payload["priority"]),
-                    "event_type": self._infer_event_type(message, payload["appname"]),
+                    "event_type": parsed.get("event_type")
+                    or self._infer_event_type(message, payload["appname"]),
                     "severity": self._severity_from_priority(int(payload["priority"])),
                 }
             )
@@ -74,7 +75,8 @@ class SyslogParser(BaseParser):
                     "source_system": payload["tag"],
                     "message": message,
                     "priority": int(payload["priority"]),
-                    "event_type": self._infer_event_type(message, payload["tag"]),
+                    "event_type": parsed.get("event_type")
+                    or self._infer_event_type(message, payload["tag"]),
                     "severity": self._severity_from_priority(int(payload["priority"])),
                 }
             )

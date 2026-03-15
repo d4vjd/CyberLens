@@ -6,8 +6,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { useAlertStream } from "../providers/AlertStreamProvider";
 import { useDemoStore } from "../store/demoStore";
 import { useThemeStore } from "../store/themeStore";
-import { navIcons } from "../../shared/components/Icons";
-import { StatusBadge } from "../../shared/components/StatusBadge";
+import { IconMoon, IconSun, navIcons } from "../../shared/components/Icons";
 import { Tooltip } from "../../shared/components/Tooltip";
 import { humanizeIdentifier } from "../../shared/utils/format";
 
@@ -63,27 +62,27 @@ function workspaceSignalLabel(
   }
 
   if (!liveStream) {
-    return "Live alert stream paused";
+    return "Live stream paused";
   }
 
   if (connectionState === "connected") {
-    return "Live alert stream connected";
+    return "Operational telemetry live";
   }
 
   if (connectionState === "reconnecting") {
-    return "Reconnecting to live alerts";
+    return "Reconnecting live telemetry";
   }
 
   if (connectionState === "connecting") {
-    return "Connecting to live alerts";
+    return "Connecting telemetry stream";
   }
 
-  return "Live alert stream unavailable";
+  return "Telemetry stream unavailable";
 }
 
 export function AppLayout() {
   const { theme, toggleTheme } = useThemeStore();
-  const { dataSource, setDataSource, intensity, liveStream } = useDemoStore();
+  const { dataSource, liveStream } = useDemoStore();
   const { connectionState, unseenCount } = useAlertStream();
   const streamTone = dataSource === "live" && !liveStream ? "neutral" : connectionTone(connectionState);
   const streamLabel =
@@ -155,7 +154,7 @@ export function AppLayout() {
                             ? unseenCount > 0
                               ? `${unseenCount} recent alert updates have not been reviewed yet.`
                               : "No unseen alert-stream updates are waiting in the queue."
-                            : `Current theme: ${humanizeIdentifier(theme)}. Synthetic intensity remains set to ${intensity}/10 in Settings.`
+                            : `Current theme: ${humanizeIdentifier(theme)}. Additional workspace controls are available in Settings.`
                       }
                     >
                       <span className="sidebar-badge">{badge}</span>
@@ -167,53 +166,13 @@ export function AppLayout() {
           })}
         </nav>
 
-        <div className="sidebar-panel">
-          <strong>{dataSource === "synthetic" ? "Synthetic walkthrough" : "Live telemetry"}</strong>
-          <p>
-            {dataSource === "synthetic"
-              ? "Synthetic storylines are active across all views so the console stays fully populated."
-              : "Live APIs are active. Switch to the synthetic walkthrough when you need richer showcase telemetry."}
-          </p>
-          <div className="sidebar-panel__chips">
-            <StatusBadge
-              label={streamLabel}
-              tone={streamTone}
-              tooltip="Current alert-stream state. Synthetic mode bypasses the live WebSocket and keeps the console populated from bundled data."
-            />
-            <StatusBadge
-              label={`Intensity ${intensity}/10`}
-              tone="neutral"
-              tooltip="Preview density controls how much synthetic telemetry appears across charts, queues, and cases."
-            />
-          </div>
-          <button
-            className="ghost-button"
-            onClick={() => setDataSource(dataSource === "live" ? "synthetic" : "live")}
-            title={
-              dataSource === "live"
-                ? "Swap the UI into bundled demo data with fuller queues and richer charts."
-                : "Return the UI to API-backed live telemetry."
-            }
-            type="button"
-          >
-            {dataSource === "live" ? "Use synthetic walkthrough" : "Return to live telemetry"}
-          </button>
-          <button
-            className="ghost-button"
-            onClick={toggleTheme}
-            title={`Switch the workspace to the ${theme === "night" ? "dawn" : "night"} theme.`}
-            type="button"
-          >
-            {theme === "night" ? "Use dawn theme" : "Use night theme"}
-          </button>
-        </div>
       </aside>
 
       <main className="workspace">
         <header className="workspace-header">
           <div>
-            <p className="eyebrow">Portfolio SIEM</p>
-            <h2>Analyst Console</h2>
+            <p className="eyebrow">Security Operations Platform</p>
+            <h2>Operational telemetry</h2>
           </div>
           <div className="workspace-header__actions">
             <div
@@ -229,6 +188,22 @@ export function AppLayout() {
               <span className={`signal-dot signal-dot--${streamTone === "neutral" ? "medium" : streamTone}`} />
               {workspaceSignalLabel(dataSource, liveStream, connectionState)}
             </div>
+            <Tooltip
+              content={
+                theme === "night"
+                  ? "Switch to the dawn theme."
+                  : "Switch back to the night theme."
+              }
+            >
+              <button
+                aria-label={theme === "night" ? "Use dawn theme" : "Use night theme"}
+                className="icon-button"
+                onClick={toggleTheme}
+                type="button"
+              >
+                {theme === "night" ? <IconSun size={16} /> : <IconMoon size={16} />}
+              </button>
+            </Tooltip>
           </div>
         </header>
 

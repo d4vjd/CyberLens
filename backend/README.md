@@ -4,7 +4,7 @@ FastAPI service powering the CyberLens SIEM application.
 
 ## Overview
 
-The backend handles log ingestion, event normalisation, real-time detection, MITRE ATT&CK coverage, incident response workflows, analytics, and demo data management. It connects to MySQL for persistence and Redis for event streaming and stateful detection primitives.
+The backend handles log ingestion, event normalisation, real-time detection, MITRE ATT&CK coverage, incident response workflows, analytics, baseline operational telemetry, and secondary scenario tooling. It connects to MySQL for persistence and Redis for event streaming and stateful detection primitives.
 
 ## Module Layout
 
@@ -13,10 +13,10 @@ src/cyberlens/
 ├── analytics/      # Trend and overview analytics endpoints
 ├── common/         # Shared utilities and helpers
 ├── db/             # SQLAlchemy models, session factory, and schema
-├── demo/           # Seed and synthetic event generator
+├── demo/           # Scenario seeding, synthetic generator, and data clearing
 ├── detection/      # Rule engine, evaluators, and rule CRUD
 ├── incidents/      # Case management, playbooks, evidence, response actions
-├── ingestion/      # Parser registry and ingest endpoints
+├── ingestion/      # Parser registry, ingest endpoints, and live baseline emitter
 ├── mitre/          # ATT&CK bundle loader and coverage API
 ├── settings/       # Analyst roster and system config
 ├── streaming/      # Redis stream consumer and WebSocket bridge
@@ -52,6 +52,25 @@ make test
 # or directly:
 docker compose run --rm backend pytest --cov=src --cov-report=term-missing
 ```
+
+## Live Baseline Telemetry
+
+In live mode, the backend can emit low-volume operational telemetry through the same ingestion service used for external logs. The baseline emitter currently produces:
+
+- MySQL and Redis health probes
+- Routine service heartbeats for core platform components
+- Normal service-to-service network flows
+
+The emitter status is exposed through `GET /api/v1/ingest/baseline/status`.
+
+## Scenario Data Operations
+
+Scenario tooling remains available for walkthroughs, but it is separate from the primary live path:
+
+- `POST /api/v1/demo/seed` seeds a realistic attack chain into the live datastore
+- `POST /api/v1/demo/generator/start` and `/stop` control the background synthetic generator
+- `DELETE /api/v1/demo/seeded-data` removes only seeded scenario records
+- `DELETE /api/v1/demo/live-data` clears indexed live data so the baseline can repopulate clean telemetry
 
 ## Linting
 

@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from cyberlens.ingestion.models import SeverityLevel
 from cyberlens.ingestion.router import get_ingestion_service
 from cyberlens.ingestion.schemas import (
+    BaselineEmitterStatus,
     EventDetail,
     EventListResponse,
     IngestedEventSummary,
@@ -86,6 +87,24 @@ async def override_ingestion_service():
     return FakeIngestionService()
 
 
+class FakeBaselineEmitter:
+    def status(self) -> BaselineEmitterStatus:
+        return BaselineEmitterStatus(
+            running=True,
+            emitted_batches=4,
+            emitted_events=19,
+            last_batch_size=5,
+            event_mix={
+                "service_health": 4,
+                "service_heartbeat": 7,
+                "network_flow": 8,
+            },
+            parser_mix={"json_generic": 4, "syslog": 7, "netflow": 8},
+            last_checks={"mysql": "ok (3.2 ms)", "redis": "ok (1.1 ms)"},
+            monitored_services=["backend-api", "detection-engine", "alert-bridge"],
+        )
+
+
 def test_ingest_raw_endpoint(client) -> None:
     app.dependency_overrides[get_ingestion_service] = override_ingestion_service
     response = client.post(
@@ -108,3 +127,15 @@ def test_list_events_endpoint(client) -> None:
     payload = response.json()
     assert payload["total"] == 1
     assert payload["items"][0]["event_type"] == "authentication"
+
+
+def test_baseline_ingestion_status_endpoint(client) -> None:
+    app.state.baseline_emitter = FakeBaselineEmitter()
+    response = client.get("/api/v1/ingest/baseline/status")
+    del app.state.baseline_emitter
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["running"] is True
+    assert payload["event_mix"]["network_flow"] == 8
+    assert payload["last_checks"]["mysql"].startswith("ok")

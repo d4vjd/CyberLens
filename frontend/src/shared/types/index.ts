@@ -192,10 +192,31 @@ export type AttackerSummary = {
   technique: string;
 };
 
+export type AnalyticsMetricCard = {
+  label: string;
+  value: string;
+  detail: string;
+  tone: Severity | "neutral";
+};
+
+export type AnalyticsLane = {
+  label: string;
+  value: string;
+  detail: string;
+  tone: Severity | "neutral";
+};
+
 export type AnalyticsSnapshot = {
+  metrics: AnalyticsMetricCard[];
   trend: TrendPoint[];
+  severityBreakdown: DistributionPoint[];
+  eventTypeMix: Array<{
+    label: string;
+    count: number;
+    detail: string;
+  }>;
   topAttackers: AttackerSummary[];
-  geoHotspots: GeoHotspot[];
+  baselineLanes: AnalyticsLane[];
 };
 
 export type AnalystRecord = {
@@ -233,6 +254,29 @@ export type DemoStatusResponse = {
     alerts: number;
     cases: number;
   };
+};
+
+export type DataClearResponse = {
+  scope: string;
+  cleared_events: number;
+  cleared_alerts: number;
+  cleared_cases: number;
+  message: string;
+};
+
+export type BaselineEmitterStatus = {
+  running: boolean;
+  pipeline: string;
+  emitted_batches: number;
+  emitted_events: number;
+  last_batch_size: number;
+  last_emit_at: string | null;
+  last_ingested_at: string | null;
+  event_mix: Record<string, number>;
+  parser_mix: Record<string, number>;
+  last_checks: Record<string, string>;
+  monitored_services: string[];
+  last_error: string | null;
 };
 
 export type AnalyticsOverviewResponse = {

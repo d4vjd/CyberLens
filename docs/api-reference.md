@@ -15,6 +15,7 @@ All endpoints are served under the `/api/v1` prefix via the nginx reverse proxy.
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/ingest/status` | Ingestion subsystem status |
+| `GET` | `/ingest/baseline/status` | Live baseline emitter runtime status and lane counters |
 | `POST` | `/ingest/raw` | Ingest a single raw log with optional metadata |
 | `POST` | `/ingest/batch` | Ingest an array of logs (batched in chunks of up to 500) |
 
@@ -115,7 +116,7 @@ All endpoints are served under the `/api/v1` prefix via the nginx reverse proxy.
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/analytics/status` | Analytics subsystem status |
-| `GET` | `/analytics/overview` | Aggregated trends, top sources, and alert breakdowns |
+| `GET` | `/analytics/overview` | Aggregated trends and top sources for the operational analytics views |
 
 ---
 
@@ -127,6 +128,8 @@ All endpoints are served under the `/api/v1` prefix via the nginx reverse proxy.
 | `POST` | `/demo/seed` | Seed a realistic attack campaign into the live datastore |
 | `POST` | `/demo/generator/start` | Start the background synthetic event generator |
 | `POST` | `/demo/generator/stop` | Stop the background generator |
+| `DELETE` | `/demo/seeded-data` | Remove seeded scenario events, alerts, and cases only |
+| `DELETE` | `/demo/live-data` | Clear indexed live events, alerts, cases, and linked IR records |
 
 ### Seed Request Body
 
@@ -149,4 +152,3 @@ All endpoints are served under the `/api/v1` prefix via the nginx reverse proxy.
 | `GET` | `/settings/demo` | Current demo runtime configuration |
 | `PATCH` | `/settings/demo` | Update demo settings (toggle generator, etc.) |
 | `GET` | `/settings/config` | System configuration |
-]]>

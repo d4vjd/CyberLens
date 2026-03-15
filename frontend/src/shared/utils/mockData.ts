@@ -1157,43 +1157,110 @@ export function getSyntheticAnalytics(intensity: number): AnalyticsSnapshot {
     alerts: Math.max(1, scaleValue(point.alerts, intensity)),
   }));
 
+  const topAttackers = [
+    {
+      source_ip: "198.51.100.42",
+      event_count: scaleValue(542, intensity),
+      alert_count: 1,
+      technique: "T1110.001",
+    },
+    {
+      source_ip: "203.0.113.17",
+      event_count: scaleValue(214, intensity),
+      alert_count: 1,
+      technique: "T1595",
+    },
+    {
+      source_ip: "10.20.5.14",
+      event_count: scaleValue(176, intensity),
+      alert_count: 2,
+      technique: "T1048.003",
+    },
+    {
+      source_ip: "10.20.4.88",
+      event_count: scaleValue(148, intensity),
+      alert_count: 2,
+      technique: "T1059.001",
+    },
+  ];
+
   return {
-    trend,
-    topAttackers: [
+    metrics: [
       {
-        source_ip: "198.51.100.42",
-        event_count: scaleValue(542, intensity),
-        alert_count: 1,
-        technique: "T1110.001",
+        label: "Event throughput",
+        value: scaleValue(1436, intensity).toLocaleString(),
+        detail: "Synthetic timeline volume across the current review window",
+        tone: "medium",
       },
       {
-        source_ip: "203.0.113.17",
-        event_count: scaleValue(214, intensity),
-        alert_count: 1,
-        technique: "T1595",
+        label: "Alert conversion",
+        value: `${scaleValue(42, intensity)} detections`,
+        detail: "Detection pressure synthesized from the scenario feed",
+        tone: "high",
       },
       {
-        source_ip: "10.20.5.14",
-        event_count: scaleValue(176, intensity),
-        alert_count: 2,
-        technique: "T1048.003",
+        label: "Distinct sources",
+        value: scaleValue(19, intensity).toString(),
+        detail: "Active entities contributing telemetry to the campaign",
+        tone: "neutral",
       },
       {
-        source_ip: "10.20.4.88",
-        event_count: scaleValue(148, intensity),
-        alert_count: 2,
-        technique: "T1059.001",
+        label: "Dominant severity",
+        value: "High",
+        detail: "Synthetic campaign tuned to keep escalation paths visible",
+        tone: "high",
       },
     ],
-    geoHotspots: [
-      { region: "Amsterdam, NL", source_count: 14, top_technique: "T1078" },
-      { region: "Chicago, US", source_count: 9, top_technique: "T1078" },
-      { region: "Ashburn, US", source_count: 18, top_technique: "T1595" },
-      { region: "Frankfurt, DE", source_count: 11, top_technique: "T1110.001" },
-    ].map((item) => ({
-      ...item,
-      source_count: scaleValue(item.source_count, intensity),
-    })),
+    trend,
+    severityBreakdown: [
+      { name: "Critical", value: scaleValue(6, intensity), tone: "critical" },
+      { name: "High", value: scaleValue(22, intensity), tone: "high" },
+      { name: "Medium", value: scaleValue(15, intensity), tone: "medium" },
+      { name: "Low", value: scaleValue(5, intensity), tone: "low" },
+    ],
+    eventTypeMix: [
+      {
+        label: "Authentication failures",
+        count: scaleValue(24, intensity),
+        detail: "Password-guessing and account access pressure",
+      },
+      {
+        label: "Lateral movement",
+        count: scaleValue(18, intensity),
+        detail: "Remote execution and admin-share activity",
+      },
+      {
+        label: "Privilege escalation",
+        count: scaleValue(12, intensity),
+        detail: "Elevation attempts requiring analyst review",
+      },
+      {
+        label: "Exfiltration signals",
+        count: scaleValue(8, intensity),
+        detail: "Outbound transfer anomalies across monitored egress",
+      },
+    ],
+    topAttackers,
+    baselineLanes: [
+      {
+        label: "Detection lane",
+        value: `${scaleValue(42, intensity)} alerts`,
+        detail: "Synthetic detections remain elevated to support analyst walkthroughs",
+        tone: "high",
+      },
+      {
+        label: "Credential pressure",
+        value: `${scaleValue(31, intensity)} auth events`,
+        detail: "Repeated login pressure anchored to T1110.001 activity",
+        tone: "high",
+      },
+      {
+        label: "Operational noise",
+        value: `${scaleValue(14, intensity)} routine events`,
+        detail: "Background chatter preserves context around the attack chain",
+        tone: "medium",
+      },
+    ],
   };
 }
 

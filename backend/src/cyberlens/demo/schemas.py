@@ -37,5 +37,13 @@ class DemoSeedResponse(BaseModel):
     message: str
 
 
+class DataClearResponse(BaseModel):
+    scope: str
+    cleared_events: int
+    cleared_alerts: int
+    cleared_cases: int
+    message: str
+
+
 class DemoGeneratorRequest(BaseModel):
     intensity: int = Field(default=5, ge=1, le=10)

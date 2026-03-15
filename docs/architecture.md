@@ -35,14 +35,15 @@ graph TD
 
 ## Runtime Flow
 
-1. Logs arrive via the REST ingestion endpoints (`POST /api/v1/ingest/raw`, `POST /api/v1/ingest/batch`) or the syslog listener.
+1. Logs arrive via the REST ingestion endpoints (`POST /api/v1/ingest/raw`, `POST /api/v1/ingest/batch`), the syslog listener, or the live baseline emitter.
 2. Events are normalised through the parser registry and persisted to the `events` table.
 3. Normalised events are published to the Redis event stream.
 4. The detection engine consumes the stream and evaluates active rules (threshold, pattern, sequence, aggregation).
 5. Generated alerts are written to the `alerts` table with MITRE ATT&CK technique mappings.
 6. Alerts are published to the `cyberlens:alerts` channel for downstream WebSocket fan-out to connected dashboards.
 7. Analysts can escalate alerts into cases, execute playbooks, upload evidence, and trigger simulated response actions.
-8. Demo seeding and the optional live generator use the same datastore and detection services so portfolio views reflect real system behaviour.
+8. The live baseline emitter sends health probes, service heartbeats, and routine network flows through the same parser and persistence path as external telemetry.
+9. Scenario seeding and the optional synthetic generator use the same datastore and detection services when walkthrough traffic is explicitly requested.
 
 ## Backend Startup Sequence
 
@@ -54,6 +55,7 @@ On application startup, the backend lifespan hook:
 4. Starts the Redis Stream detection consumer (background task).
 5. Starts the alert WebSocket bridge (background task).
 6. Optionally starts the syslog listener based on the `SYSLOG_ENABLED` environment variable.
+7. Starts the live baseline emitter so the platform has genuine operational telemetry in live mode.
 
 ## Database Schema
 
@@ -71,7 +73,7 @@ The MySQL schema covers 11 core tables managed by Alembic:
 | `response_actions` | Simulated response actions executed on cases |
 | `playbooks` | Incident response playbook definitions |
 | `analysts` | SOC analyst roster |
-| `system_config` | Runtime configuration and demo state |
+| `system_config` | Runtime configuration and scenario/baseline state |
 
 ## Detection Rule Types
 

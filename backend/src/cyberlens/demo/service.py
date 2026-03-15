@@ -7,19 +7,34 @@ import logging
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
 from redis.asyncio import Redis
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cyberlens.common.time_utils import utc_now
 from cyberlens.config import get_settings
-from cyberlens.demo.schemas import DemoCounts, DemoSeedRequest, DemoSeedResponse, DemoStatusResponse
+from cyberlens.demo.schemas import (
+    DataClearResponse,
+    DemoCounts,
+    DemoSeedRequest,
+    DemoSeedResponse,
+    DemoStatusResponse,
+)
 from cyberlens.demo.seed import build_seed_dataset
 from cyberlens.demo.types import DemoEventSpec
-from cyberlens.detection.models import Alert
+from cyberlens.detection.models import Alert, DetectionRule, MitreTechniqueCoverage
 from cyberlens.detection.service import DetectionService
-from cyberlens.incidents.models import Case, CaseStatus, ResponseActionType
+from cyberlens.incidents.models import (
+    Case,
+    CaseAlert,
+    CaseEvent,
+    CaseEvidence,
+    CaseStatus,
+    ResponseAction,
+    ResponseActionType,
+)
 from cyberlens.incidents.schemas import (
     CaseCommentRequest,
     CaseFromAlertRequest,
@@ -125,6 +140,81 @@ class DemoService:
             created_cases=len(created_case_ids),
             seeded_at=seeded_at,
             message="Demo dataset seeded into the live event store and detection pipeline.",
+        )
+
+    async def clear_seeded_demo_data(self) -> DataClearResponse:
+        demo_case_ids = list(
+            (
+                await self.session.scalars(
+                    select(Case.id).where(Case.title.like(f"{DEMO_CASE_PREFIX}%"))
+                )
+            ).all()
+        )
+        demo_alert_ids = list(
+            (
+                await self.session.scalars(
+                    select(Alert.id).where(Alert.assigned_to == "demo-seeded")
+                )
+            ).all()
+        )
+        demo_event_count = int(
+            (
+                await self.session.scalar(
+                    select(func.count()).select_from(Event).where(Event.is_demo.is_(True))
+                )
+            )
+            or 0
+        )
+
+        await self._delete_related_data(case_ids=demo_case_ids, alert_ids=demo_alert_ids)
+        if demo_event_count:
+            await self.session.execute(delete(Event).where(Event.is_demo.is_(True)))
+        await self._rebuild_mitre_coverage()
+        await self.session.commit()
+
+        settings_service = SettingsService(self.session)
+        await settings_service.set_demo_runtime_state(
+            seeded_at=None,
+            enabled=False,
+            generator_status="stopped",
+        )
+
+        return DataClearResponse(
+            scope="seeded_demo",
+            cleared_events=demo_event_count,
+            cleared_alerts=len(demo_alert_ids),
+            cleared_cases=len(demo_case_ids),
+            message="Seeded demo events, demo alerts, and demo cases were removed.",
+        )
+
+    async def clear_live_data(self) -> DataClearResponse:
+        case_ids = list((await self.session.scalars(select(Case.id))).all())
+        alert_ids = list((await self.session.scalars(select(Alert.id))).all())
+        event_count = int(
+            (await self.session.scalar(select(func.count()).select_from(Event))) or 0
+        )
+
+        await self._delete_related_data(case_ids=case_ids, alert_ids=alert_ids)
+        if event_count:
+            await self.session.execute(delete(Event))
+        await self._rebuild_mitre_coverage()
+        await self.session.commit()
+
+        settings_service = SettingsService(self.session)
+        await settings_service.set_demo_runtime_state(
+            seeded_at=None,
+            enabled=False,
+            generator_status="stopped",
+        )
+
+        return DataClearResponse(
+            scope="live_data",
+            cleared_events=event_count,
+            cleared_alerts=len(alert_ids),
+            cleared_cases=len(case_ids),
+            message=(
+                "All indexed events, alerts, cases, and linked investigation records were removed."
+            ),
         )
 
     async def ingest_specs(
@@ -295,4 +385,83 @@ class DemoService:
                     summary=fallback_summary,
                     details={"playbook_id": payload.playbook_id, "fallback": True},
                 ),
+            )
+
+    async def _delete_related_data(
+        self,
+        *,
+        case_ids: Sequence[int],
+        alert_ids: Sequence[int],
+    ) -> None:
+        evidence_paths: list[str] = []
+        if case_ids:
+            evidence_paths = list(
+                (
+                    await self.session.scalars(
+                        select(CaseEvidence.file_path).where(CaseEvidence.case_id.in_(case_ids))
+                    )
+                ).all()
+            )
+            await self.session.execute(
+                delete(ResponseAction).where(ResponseAction.case_id.in_(case_ids))
+            )
+            await self.session.execute(delete(CaseEvent).where(CaseEvent.case_id.in_(case_ids)))
+            await self.session.execute(
+                delete(CaseEvidence).where(CaseEvidence.case_id.in_(case_ids))
+            )
+            await self.session.execute(delete(CaseAlert).where(CaseAlert.case_id.in_(case_ids)))
+
+        if alert_ids:
+            await self.session.execute(
+                delete(ResponseAction).where(ResponseAction.alert_id.in_(alert_ids))
+            )
+            await self.session.execute(delete(CaseAlert).where(CaseAlert.alert_id.in_(alert_ids)))
+            await self.session.execute(delete(Alert).where(Alert.id.in_(alert_ids)))
+
+        if case_ids:
+            await self.session.execute(delete(Case).where(Case.id.in_(case_ids)))
+
+        self._cleanup_evidence_files(evidence_paths)
+
+    def _cleanup_evidence_files(self, file_paths: Sequence[str]) -> None:
+        for raw_path in file_paths:
+            try:
+                path = Path(raw_path)
+                if path.exists():
+                    path.unlink()
+            except OSError:
+                logger.warning("Failed to delete evidence file during data clear: %s", raw_path)
+
+    async def _rebuild_mitre_coverage(self) -> None:
+        await self.session.execute(delete(MitreTechniqueCoverage))
+        coverage_rows = (
+            await self.session.execute(
+                select(
+                    DetectionRule.id,
+                    DetectionRule.mitre_technique_id,
+                    DetectionRule.mitre_tactic,
+                    func.count(Alert.id),
+                    func.max(Alert.created_at),
+                )
+                .join(Alert, Alert.rule_id == DetectionRule.id)
+                .where(
+                    DetectionRule.mitre_technique_id.is_not(None),
+                    DetectionRule.mitre_tactic.is_not(None),
+                )
+                .group_by(
+                    DetectionRule.id,
+                    DetectionRule.mitre_technique_id,
+                    DetectionRule.mitre_tactic,
+                )
+            )
+        ).all()
+        for rule_id, technique_id, tactic, alert_count, last_alert_at in coverage_rows:
+            self.session.add(
+                MitreTechniqueCoverage(
+                    rule_id=rule_id,
+                    technique_id=str(technique_id),
+                    tactic=str(tactic),
+                    alert_count=int(alert_count or 0),
+                    last_alert_at=last_alert_at,
+                )
             )

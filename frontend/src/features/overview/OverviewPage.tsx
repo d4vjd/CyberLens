@@ -23,6 +23,7 @@ import { StatusBadge } from "../../shared/components/StatusBadge";
 import type {
   AlertListResponse,
   AnalyticsOverviewResponse,
+  BaselineEmitterStatus,
   CaseListResponseApi,
   DemoStatusResponse,
   EventListResponse,
@@ -34,12 +35,13 @@ import { formatCountLabel, humanizeIdentifier } from "../../shared/utils/format"
 import { getSyntheticOverview } from "../../shared/utils/mockData";
 
 async function fetchLiveOverview(): Promise<OverviewSnapshot> {
-  const [events, alerts, analytics, cases, demoStatus] = await Promise.all([
+  const [events, alerts, analytics, cases, demoStatus, baselineStatus] = await Promise.all([
     fetchJson<EventListResponse>("/events?limit=100&offset=0"),
     fetchJson<AlertListResponse>("/alerts?limit=50&offset=0"),
     fetchJson<AnalyticsOverviewResponse>("/analytics/overview"),
     fetchJson<CaseListResponseApi>("/incidents"),
     fetchJson<DemoStatusResponse>("/demo/status"),
+    fetchJson<BaselineEmitterStatus>("/ingest/baseline/status"),
   ]);
 
   const severityCounts = new Map<Severity, number>([
@@ -53,12 +55,19 @@ async function fetchLiveOverview(): Promise<OverviewSnapshot> {
     severityCounts.set(event.severity, (severityCounts.get(event.severity) ?? 0) + 1);
   });
 
+  const healthChecks = baselineStatus.event_mix.service_health ?? 0;
+  const heartbeats = baselineStatus.event_mix.service_heartbeat ?? 0;
+  const networkFlows = baselineStatus.event_mix.network_flow ?? 0;
+  const checkSummary = Object.entries(baselineStatus.last_checks)
+    .map(([name, status]) => `${name}: ${status}`)
+    .join(" · ");
+
   return {
     metrics: [
       {
         label: "Events indexed",
         value: events.total.toLocaleString(),
-        delta: `${demoStatus.counts.events.toLocaleString()} seeded demo events available`,
+        delta: `${baselineStatus.emitted_events.toLocaleString()} operational baseline events emitted`,
         tone: "low",
         tooltip: "Total event records currently indexed in the backend event store.",
       },
@@ -72,16 +81,16 @@ async function fetchLiveOverview(): Promise<OverviewSnapshot> {
       {
         label: "Cases",
         value: cases.total.toString(),
-        delta: `${demoStatus.counts.cases} seeded IR workflows ready`,
+        delta: cases.total ? `${cases.total} investigations in motion` : "IR workspace is quiet",
         tone: cases.total ? "high" : "neutral",
-        tooltip: "Case count reflects the incident workspace, including any seeded demo investigations in the live backend.",
+        tooltip: "Case count reflects the incident workspace for live and seeded investigations.",
       },
       {
-        label: "Streaming posture",
-        value: demoStatus.demo.enabled ? "Generator active" : "Detection active",
-        delta: demoStatus.demo.enabled ? `Intensity ${demoStatus.demo.intensity}/10` : "Live detection engine running",
-        tone: demoStatus.demo.enabled ? "medium" : "low",
-        tooltip: "Shows whether the live backend is ingesting generator traffic or only processing existing telemetry.",
+        label: "Baseline status",
+        value: baselineStatus.running ? "Live telemetry active" : "Standby",
+        delta: `${healthChecks} probes · ${heartbeats} heartbeats · ${networkFlows} flows`,
+        tone: baselineStatus.running ? "low" : "neutral",
+        tooltip: "Shows whether the live operational baseline is actively feeding the ingestion pipeline.",
       },
     ],
     throughput: analytics.trends.slice(-8).map((item) => ({
@@ -105,34 +114,32 @@ async function fetchLiveOverview(): Promise<OverviewSnapshot> {
     })),
     watchlist: [
       {
-        label: "ATT&CK coverage",
-        value: "In view",
+        label: "Health lane",
+        value: `${healthChecks} probes`,
+        tone: baselineStatus.last_error ? "high" : "low",
+        context: baselineStatus.last_error
+          ? baselineStatus.last_error
+          : checkSummary || "Awaiting the first control-plane health probe.",
+      },
+      {
+        label: "Heartbeat lane",
+        value: `${heartbeats} signals`,
         tone: "low",
-        context: "Technique coverage is available directly from the current detections and rule library.",
+        context: `${baselineStatus.monitored_services.length} core services are sending routine heartbeats through the live syslog parser.`,
       },
       {
-        label: "IR workspace",
-        value: cases.total ? `${cases.total} active` : "Quiet",
-        tone: cases.total ? "medium" : "neutral",
-        context: cases.total
-          ? "Incident response workflows are already open and ready for analyst drill-down."
-          : "No live cases are open yet. Seed a showcase dataset in Settings if you need a populated workspace.",
+        label: "Network baseline",
+        value: `${networkFlows} flows`,
+        tone: "low",
+        context: "Routine service-to-service activity is entering the live pipeline as normal netflow traffic.",
       },
       {
-        label: "Demo readiness",
-        value: demoStatus.counts.events ? "Seeded" : "Needs seed",
+        label: "Scenario state",
+        value: demoStatus.counts.events ? "Seeded" : "Empty",
         tone: demoStatus.counts.events ? "medium" : "neutral",
         context: demoStatus.counts.events
-          ? "The live backend already contains seeded telemetry for portfolio screenshots and demos."
-          : "Seed the live demo dataset in Settings to populate alerts, cases, and ATT&CK coverage.",
-      },
-      {
-        label: "Alert stream",
-        value: alerts.total ? "Active" : "Idle",
-        tone: alerts.total ? "high" : "low",
-        context: alerts.total
-          ? "Detections are currently being generated and remain visible in the triage queue."
-          : "No alerts are currently queued for analyst review.",
+          ? "Demo scenarios remain available in Settings without driving the live baseline."
+          : "Seed a scenario only when you need a denser walkthrough or IR storyline.",
       },
     ],
   };
@@ -169,22 +176,31 @@ export function OverviewPage() {
     queryKey: ["overview", dataSource, intensity],
     queryFn: () =>
       dataSource === "synthetic" ? Promise.resolve(getSyntheticOverview(intensity)) : fetchLiveOverview(),
+    refetchInterval: dataSource === "live" ? 8000 : false,
   });
 
   return (
     <div className="page-grid">
       <PageIntro
         eyebrow="Situation Overview"
-        title="SOC-wide telemetry pulse"
-        description="A complete analyst-facing dashboard with live API mode for real backend data and a synthetic mode for screenshot-rich walkthroughs."
+        title={dataSource === "synthetic" ? "SOC-wide telemetry pulse" : "Live security operations"}
+        description={
+          dataSource === "synthetic"
+            ? "A complete analyst-facing dashboard with live API mode for real backend data and a synthetic mode for screenshot-rich walkthroughs."
+            : "Track live health probes, service heartbeats, and routine network activity through the same ingestion path used for real telemetry."
+        }
         actions={
           <StatusBadge
-            label={dataSource === "synthetic" ? `Intensity ${intensity}/10` : "Live backend snapshot"}
+            label={
+              dataSource === "synthetic"
+                ? `Intensity ${intensity}/10`
+                : data?.metrics[3]?.value ?? "Live telemetry snapshot"
+            }
             tone={dataSource === "synthetic" ? "connected" : "low"}
             tooltip={
               dataSource === "synthetic"
                 ? "Synthetic density controls how aggressively overview charts, cases, and queues are populated."
-                : "The overview is requesting live backend metrics and trend data."
+                : "The overview is requesting live backend metrics, baseline status, and trend data."
             }
           />
         }
@@ -209,7 +225,10 @@ export function OverviewPage() {
       {!isLoading && !isError && data ? (
         <>
           <div className="content-grid content-grid--wide">
-            <DataPanel subtitle="Events and alert pressure by time bucket" title="Event rate">
+            <DataPanel
+              subtitle="Events and alert pressure by time bucket"
+              title={dataSource === "synthetic" ? "Event rate" : "Telemetry trend"}
+            >
               <div className="chart-frame">
                 <ResponsiveContainer height={300} width="100%">
                   <AreaChart data={data.throughput}>
@@ -240,7 +259,10 @@ export function OverviewPage() {
               </div>
             </DataPanel>
 
-            <DataPanel subtitle="Weighted activity clusters" title="Top sources">
+            <DataPanel
+              subtitle="Weighted activity clusters"
+              title={dataSource === "synthetic" ? "Top sources" : "Busiest sources"}
+            >
               <div className="list-panel">
                 {data.topSources.map((source) => (
                   <article className="list-item" key={source.label}>
@@ -280,7 +302,10 @@ export function OverviewPage() {
               </div>
             </DataPanel>
 
-            <DataPanel subtitle="Operator watch list" title="Shift focus">
+            <DataPanel
+              subtitle={dataSource === "synthetic" ? "Operator watch list" : "Operator focus"}
+              title={dataSource === "synthetic" ? "Shift focus" : "Live signals"}
+            >
               <div className="watchlist-grid">
                 {data.watchlist.map((item) => (
                   <article className="watchlist-card" key={item.label}>
@@ -302,11 +327,15 @@ export function OverviewPage() {
               <StatusBadge
                 label={formatCountLabel(data.topSources.length, "source")}
                 tone="neutral"
-                tooltip="Top sources are weighted by signal volume and severity to keep the list stable for screenshots."
+                tooltip="Top sources are weighted by signal volume and severity to keep the list stable."
               />
             }
-            subtitle="Top-source narratives help anchor the charts to named activity clusters."
-            title="Analyst notes"
+            subtitle={
+              dataSource === "synthetic"
+                ? "Top-source narratives help anchor the charts to named activity clusters."
+                : "The live summary keeps the busiest sources visible without dropping into the raw event stream."
+            }
+            title={dataSource === "synthetic" ? "Analyst notes" : "Live notes"}
           >
             <div className="timeline-preview">
               {data.topSources.slice(0, 3).map((source, index) => (

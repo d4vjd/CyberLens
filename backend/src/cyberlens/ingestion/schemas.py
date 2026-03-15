@@ -37,6 +37,21 @@ class IngestResponse(BaseModel):
     events: list[IngestedEventSummary]
 
 
+class BaselineEmitterStatus(BaseModel):
+    running: bool = False
+    pipeline: str = "live_ingestion"
+    emitted_batches: int = 0
+    emitted_events: int = 0
+    last_batch_size: int = 0
+    last_emit_at: datetime | None = None
+    last_ingested_at: datetime | None = None
+    event_mix: dict[str, int] = Field(default_factory=dict)
+    parser_mix: dict[str, int] = Field(default_factory=dict)
+    last_checks: dict[str, str] = Field(default_factory=dict)
+    monitored_services: list[str] = Field(default_factory=list)
+    last_error: str | None = None
+
+
 class EventDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

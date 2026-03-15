@@ -1,6 +1,6 @@
 # Contributing to CyberLens
 
-Thank you for considering contributing to CyberLens! This document outlines the development workflow, coding standards, and pull request process.
+Hi there! I'm David (the builder behind CyberLens). Thank you for considering contributing! This document outlines the development workflow, coding standards, and pull request process. Whether you're making a tiny typo fix or proposing a major feature, I appreciate you taking the time to help out.
 
 ---
 

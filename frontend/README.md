@@ -4,20 +4,20 @@ React + TypeScript dashboard for the CyberLens SIEM application.
 
 ## Overview
 
-The frontend provides a dark-themed SOC dashboard with 8 routed feature pages. It communicates with the backend API through nginx and supports a synthetic mode toggle for screenshot-ready portfolio views without backend dependency.
+The frontend provides a professional SOC dashboard with 8 routed feature pages. It communicates with the backend API through nginx, prioritises live operational telemetry by default, and keeps synthetic/scenario tooling behind secondary controls.
 
 ## Feature Pages
 
 | Page | Description |
 |---|---|
-| **Overview** | Live event and alert trend charts, top sources |
+| **Overview** | Live telemetry overview, baseline health, severity mix, and operational source visibility |
 | **Events** | Paginated event browser with search and filters |
 | **Alerts** | Alert listing with severity indicators |
 | **MITRE ATT&CK** | Technique coverage matrix derived from live rules and alerts |
 | **Cases** | Incident case management with details, comments, and actions |
 | **Rules** | Detection rule browser and editor |
-| **Analytics** | Trend visualisations and source breakdowns |
-| **Settings** | Analyst roster, system config, and demo controls |
+| **Analytics** | Operational trend analysis, severity distribution, event-type mix, and baseline pulse |
+| **Settings** | Live controls, datastore clearing, analyst management, and hidden demo tooling |
 
 ## Module Layout
 
@@ -59,6 +59,12 @@ npm run build
 # Or via Make (also lint-checks the frontend)
 make lint
 ```
+
+## UI Notes
+
+- Live mode is the primary experience and reads from backend APIs plus the baseline emitter.
+- Synthetic mode is still available, but demo controls are intentionally de-emphasized in the Settings page.
+- Theme switching is exposed as a compact header action instead of a persistent sidebar card.
 
 ## Key Dependencies
 

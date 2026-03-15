@@ -6,7 +6,12 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from cyberlens.demo.router import get_demo_service
-from cyberlens.demo.schemas import DemoCounts, DemoSeedResponse, DemoStatusResponse
+from cyberlens.demo.schemas import (
+    DataClearResponse,
+    DemoCounts,
+    DemoSeedResponse,
+    DemoStatusResponse,
+)
 from cyberlens.main import app
 from cyberlens.settings.schemas import DemoSettings
 
@@ -33,6 +38,24 @@ class FakeDemoService:
             message="Seeded",
         )
 
+    async def clear_seeded_demo_data(self):
+        return DataClearResponse(
+            scope="seeded_demo",
+            cleared_events=180,
+            cleared_alerts=6,
+            cleared_cases=3,
+            message="Cleared seeded demo data",
+        )
+
+    async def clear_live_data(self):
+        return DataClearResponse(
+            scope="live_data",
+            cleared_events=300,
+            cleared_alerts=9,
+            cleared_cases=4,
+            message="Cleared live data",
+        )
+
 
 async def override_demo_service():
     return FakeDemoService()
@@ -56,3 +79,21 @@ def test_demo_seed_endpoint(client) -> None:
 
     assert response.status_code == 200
     assert response.json()["seeded_events"] == 200
+
+
+def test_clear_seeded_demo_data_endpoint(client) -> None:
+    app.dependency_overrides[get_demo_service] = override_demo_service
+    response = client.delete("/api/v1/demo/seeded-data")
+    app.dependency_overrides.pop(get_demo_service, None)
+
+    assert response.status_code == 200
+    assert response.json()["scope"] == "seeded_demo"
+
+
+def test_clear_live_data_endpoint(client) -> None:
+    app.dependency_overrides[get_demo_service] = override_demo_service
+    response = client.delete("/api/v1/demo/live-data")
+    app.dependency_overrides.pop(get_demo_service, None)
+
+    assert response.status_code == 200
+    assert response.json()["cleared_events"] == 300

@@ -1,6 +1,9 @@
 [project]
 name = "cyberlens-backend"
 version = "0.1.0"
+authors = [
+  { name="David Pupăză" }
+]
 description = "CyberLens SIEM backend"
 readme = "README.md"
 requires-python = ">=3.12"

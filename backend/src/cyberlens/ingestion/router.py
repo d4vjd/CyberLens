@@ -3,12 +3,14 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cyberlens.dependencies import get_db_session, get_redis_client
+from cyberlens.ingestion.baseline_emitter import BaselineEmitter, build_default_baseline_status
 from cyberlens.ingestion.schemas import (
+    BaselineEmitterStatus,
     EventDetail,
     EventListResponse,
     EventQueryParams,
@@ -28,9 +30,22 @@ async def get_ingestion_service(
     return IngestionService(session=session, redis=redis)
 
 
+def get_baseline_emitter(request: Request) -> BaselineEmitter | None:
+    return getattr(request.app.state, "baseline_emitter", None)
+
+
 @router.get("/ingest/status")
 async def ingestion_status() -> dict[str, str]:
     return {"status": "ready", "message": "Ingestion pipeline is available."}
+
+
+@router.get("/ingest/baseline/status", response_model=BaselineEmitterStatus)
+async def baseline_ingestion_status(
+    runtime: BaselineEmitter | None = Depends(get_baseline_emitter),
+) -> BaselineEmitterStatus:
+    if runtime is None:
+        return build_default_baseline_status()
+    return runtime.status()
 
 
 @router.post("/ingest/raw", response_model=IngestResponse)

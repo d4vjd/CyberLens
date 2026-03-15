@@ -124,6 +124,30 @@ export function IconTarget(props: IconProps) {
   );
 }
 
+export function IconSun(props: IconProps) {
+  return (
+    <svg {...s(props)}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2.5" />
+      <path d="M12 19.5V22" />
+      <path d="M4.93 4.93l1.77 1.77" />
+      <path d="M17.3 17.3l1.77 1.77" />
+      <path d="M2 12h2.5" />
+      <path d="M19.5 12H22" />
+      <path d="M4.93 19.07l1.77-1.77" />
+      <path d="M17.3 6.7l1.77-1.77" />
+    </svg>
+  );
+}
+
+export function IconMoon(props: IconProps) {
+  return (
+    <svg {...s(props)}>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
+    </svg>
+  );
+}
+
 export const navIcons: Record<string, (props: IconProps) => JSX.Element> = {
   "/": IconDashboard,
   "/events": IconActivity,

@@ -75,6 +75,7 @@ export function EventsPage() {
             offset: page * pageSize,
             limit: pageSize,
           }),
+    refetchInterval: dataSource === "live" ? 5000 : false,
   });
 
   useEffect(() => {
@@ -97,19 +98,29 @@ export function EventsPage() {
     <div className="page-grid">
       <PageIntro
         eyebrow="Events"
-        title="Normalized event stream"
-        description="Filter the raw intake, inspect normalized fields, and switch to synthetic telemetry whenever you need a fully populated walkthrough."
+        title={dataSource === "synthetic" ? "Normalized event stream" : "Live event stream"}
+        description={
+          dataSource === "synthetic"
+            ? "Filter the raw intake, inspect normalized fields, and switch to synthetic telemetry whenever you need a fully populated walkthrough."
+            : "Inspect the live intake, review normalized payloads, and follow routine service activity through the real ingestion pipeline."
+        }
         actions={
           <div className="panel-badge-row">
             <StatusBadge
-              label={dataSource === "synthetic" ? "Synthetic feed" : liveStream ? "Live feed enabled" : "Live feed paused"}
+              label={
+                dataSource === "synthetic"
+                  ? "Synthetic feed"
+                  : liveStream
+                    ? "Live feed enabled"
+                    : "Live feed paused"
+              }
               tone={dataSource === "synthetic" ? "connected" : liveStream ? "low" : "neutral"}
               tooltip={
                 dataSource === "synthetic"
                   ? "Events are sourced from the bundled showcase dataset."
                   : liveStream
-                    ? "The page is using live APIs and the alert stream remains enabled."
-                    : "The page is using live APIs, but the background alert stream is paused."
+                    ? "The page is reading the live ingestion pipeline while the alert bridge remains enabled."
+                    : "The page is reading live APIs, but the background alert stream is paused."
               }
             />
             <StatusBadge
@@ -121,7 +132,10 @@ export function EventsPage() {
         }
       />
 
-      <DataPanel subtitle="Filter by search term, type, source, or severity" title="Search controls">
+      <DataPanel
+        subtitle="Filter by search term, type, source, or severity"
+        title={dataSource === "synthetic" ? "Search controls" : "Live filters"}
+      >
         <div className="filter-grid">
           <SearchInput
             onChange={setSearch}
@@ -275,7 +289,9 @@ export function EventsPage() {
                 <p className="detail-summary">{selectedEvent.message ?? "No event summary available."}</p>
                 <div className="detail-grid detail-grid--summary">
                   <div>
-                    <span className="detail-label">Connection flow</span>
+                    <span className="detail-label">
+                      Connection flow
+                    </span>
                     <strong>{formatFlow(selectedEvent.source_ip, selectedEvent.dest_ip)}</strong>
                   </div>
                   <div>

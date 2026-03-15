@@ -24,6 +24,7 @@ from cyberlens.detection.engine import DetectionEngine
 from cyberlens.detection.router import router as detection_router
 from cyberlens.detection.rule_loader import RuleLoader
 from cyberlens.incidents.router import router as incidents_router
+from cyberlens.ingestion.baseline_emitter import BaselineEmitter
 from cyberlens.ingestion.router import router as ingestion_router
 from cyberlens.ingestion.syslog_receiver import SyslogReceiver
 from cyberlens.mitre.router import router as mitre_router
@@ -52,8 +53,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     detection_redis = build_redis_client()
     websocket_redis = build_redis_client()
     demo_redis = build_redis_client()
+    baseline_redis = build_redis_client()
     engine = DetectionEngine(session_factory=SessionLocal, redis=detection_redis)
     demo_generator = DemoGenerator(session_factory=SessionLocal, redis=demo_redis)
+    baseline_emitter = BaselineEmitter(session_factory=SessionLocal, redis=baseline_redis)
     await engine.start()
     await alert_hub.start(websocket_redis)
 
@@ -65,13 +68,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await demo_generator.start(demo_settings.intensity)
         async with SessionLocal() as session:
             await SettingsService(session).set_demo_runtime_state(generator_status="running")
+    await baseline_emitter.start()
     app.state.syslog_receiver = receiver
     app.state.detection_engine = engine
     app.state.detection_redis = detection_redis
     app.state.websocket_redis = websocket_redis
     app.state.demo_generator = demo_generator
+    app.state.baseline_emitter = baseline_emitter
     yield
     await receiver.stop()
+    await baseline_emitter.aclose()
     await demo_generator.aclose()
     await alert_hub.stop()
     await engine.stop()

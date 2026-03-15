@@ -11,6 +11,7 @@ from cyberlens.ingestion.models import Event, SeverityLevel
 from cyberlens.ingestion.schemas import IngestSingleRequest
 
 SEVERITY_ALIASES = {
+    "low": SeverityLevel.LOW,
     "informational": SeverityLevel.LOW,
     "info": SeverityLevel.LOW,
     "notice": SeverityLevel.LOW,

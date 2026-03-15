@@ -28,49 +28,51 @@ export function DataTable<T>({
   selectedRowKey,
 }: DataTableProps<T>) {
   return (
-    <table className="data-table">
-      <thead>
-        <tr>
-          {columns.map((column) => (
-            <th key={column.header}>{column.header}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {items.length ? (
-          items.map((item) => {
-            const key = rowKey(item);
-            const isSelected = selectedRowKey === key;
-
-            return (
-              <tr
-                className={
-                  onRowClick
-                    ? isSelected
-                      ? "data-table__row data-table__row--interactive data-table__row--selected"
-                      : "data-table__row data-table__row--interactive"
-                    : isSelected
-                      ? "data-table__row data-table__row--selected"
-                      : "data-table__row"
-                }
-                key={key}
-                onClick={() => onRowClick?.(item)}
-                title={rowTitle?.(item)}
-              >
-                {columns.map((column) => (
-                  <td key={column.header}>{column.render(item)}</td>
-                ))}
-              </tr>
-            );
-          })
-        ) : (
+    <div className="data-table-wrapper">
+      <table className="data-table">
+        <thead>
           <tr>
-            <td className="table-message" colSpan={columns.length}>
-              {emptyMessage}
-            </td>
+            {columns.map((column) => (
+              <th key={column.header}>{column.header}</th>
+            ))}
           </tr>
-        )}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {items.length ? (
+            items.map((item) => {
+              const key = rowKey(item);
+              const isSelected = selectedRowKey === key;
+
+              return (
+                <tr
+                  className={
+                    onRowClick
+                      ? isSelected
+                        ? "data-table__row data-table__row--interactive data-table__row--selected"
+                        : "data-table__row data-table__row--interactive"
+                      : isSelected
+                        ? "data-table__row data-table__row--selected"
+                        : "data-table__row"
+                  }
+                  key={key}
+                  onClick={() => onRowClick?.(item)}
+                  title={rowTitle?.(item)}
+                >
+                  {columns.map((column) => (
+                    <td key={column.header}>{column.render(item)}</td>
+                  ))}
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td className="table-message" colSpan={columns.length}>
+                {emptyMessage}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
