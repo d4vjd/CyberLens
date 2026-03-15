@@ -18,14 +18,18 @@ from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Protocol
+from typing import Protocol, TypedDict
 
 from redis.asyncio import Redis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from cyberlens.common.time_utils import utc_now
-from cyberlens.ingestion.schemas import BaselineEmitterStatus, IngestSingleRequest
+from cyberlens.ingestion.schemas import (
+    BaselineEmitterStatus,
+    IngestResponse,
+    IngestSingleRequest,
+)
 from cyberlens.ingestion.service import IngestionService
 
 logger = logging.getLogger(__name__)
@@ -67,10 +71,15 @@ class SupportsIngestBatch(Protocol):
     async def ingest_batch(
         self,
         payloads: list[IngestSingleRequest],
-    ): ...
+    ) -> IngestResponse: ...
 
 
 ServiceFactory = Callable[[AsyncSession, Redis], SupportsIngestBatch]
+
+
+class HealthCheckPayload(TypedDict):
+    status: str
+    latency_ms: float
 
 _HEARTBEAT_SERVICES = (
     ServiceHeartbeatSpec(
@@ -294,7 +303,7 @@ class BaselineEmitter:
         health_checks: list[HealthCheckResult],
     ) -> BaselineEnvelope:
         degraded = any(check.status != "ok" for check in health_checks)
-        checks_payload = {
+        checks_payload: dict[str, HealthCheckPayload] = {
             check.name: {
                 "status": check.status,
                 "latency_ms": round(check.latency_ms, 2),
@@ -381,7 +390,7 @@ class BaselineEmitter:
     def _isoformat_z(self, value: datetime) -> str:
         return value.astimezone(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
-    def _json_checks(self, payload: dict[str, dict[str, object]]) -> str:
+    def _json_checks(self, payload: dict[str, HealthCheckPayload]) -> str:
         items = []
         for key, value in payload.items():
             items.append(
