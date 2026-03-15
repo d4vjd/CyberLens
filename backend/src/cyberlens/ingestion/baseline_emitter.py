@@ -81,6 +81,7 @@ class HealthCheckPayload(TypedDict):
     status: str
     latency_ms: float
 
+
 _HEARTBEAT_SERVICES = (
     ServiceHeartbeatSpec(
         hostname="edge-gateway-01",
