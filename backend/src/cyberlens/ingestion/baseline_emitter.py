@@ -284,8 +284,7 @@ class BaselineEmitter:
             for spec in self._pick_services(heartbeat_count)
         )
         batch.extend(
-            self._build_network_flow(emitted_at, flow)
-            for flow in self._pick_flows(flow_count)
+            self._build_network_flow(emitted_at, flow) for flow in self._pick_flows(flow_count)
         )
         return batch
 

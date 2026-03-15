@@ -90,9 +90,7 @@ def test_baseline_emitter_uses_live_ingestion_pipeline() -> None:
     assert status.parser_mix["json_generic"] == 1
     assert status.last_checks["mysql"].startswith("ok")
     assert any(
-        "severity=low" in payload.raw_log
-        for payload in captured
-        if payload.source_type == "syslog"
+        "severity=low" in payload.raw_log for payload in captured if payload.source_type == "syslog"
     )
     assert any(
         "severity=low" in payload.raw_log

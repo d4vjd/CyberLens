@@ -190,9 +190,7 @@ class DemoService:
     async def clear_live_data(self) -> DataClearResponse:
         case_ids = list((await self.session.scalars(select(Case.id))).all())
         alert_ids = list((await self.session.scalars(select(Alert.id))).all())
-        event_count = int(
-            (await self.session.scalar(select(func.count()).select_from(Event))) or 0
-        )
+        event_count = int((await self.session.scalar(select(func.count()).select_from(Event))) or 0)
 
         await self._delete_related_data(case_ids=case_ids, alert_ids=alert_ids)
         if event_count:
